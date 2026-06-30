@@ -24,18 +24,19 @@ export const userSigninController = async(req : Request,res: Response)=>{
         })
 
         if(!user){
-            res.status(400).json("Email not registered");
+            res.status(400).json({message : "Email not registered"});
             return;
         }
 
         const totp = getOTP(email, "AUTH");
-        const message = `Your OTP for Cloud IDE is ${totp}`;
-        await sendMail(email, message);
-        console.log("OTP sent to:", email);
+        console.log("Generated OTP:", totp);
+
+        // await sendMail(email, message);
 
         res.status(200).json({
             message: "otp sent"
-        })
+        });
+        
 
 
     } catch (e) {
