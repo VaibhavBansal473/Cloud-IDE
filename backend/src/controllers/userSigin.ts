@@ -31,12 +31,13 @@ export const userSigninController = async(req : Request,res: Response)=>{
         const totp = getOTP(email, "AUTH");
         console.log("Generated OTP:", totp);
 
-        // await sendMail(email, message);
+        const message = `Your OTP for Cloud IDE is ${totp}`;
+        await sendMail(email, message);
 
         res.status(200).json({
             message: "otp sent"
         });
-        
+
 
 
     } catch (e) {
