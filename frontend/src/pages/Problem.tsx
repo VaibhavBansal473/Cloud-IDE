@@ -208,8 +208,9 @@ export default function Problem() {
           <h1 className="text-2xl font-bold">{problem.name}</h1>
           <div
             className="mt-4 prose prose-neutral dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: typeof marked === 'function' ? marked(problem.problemStatement) : problem.problemStatement }}
-          />
+            dangerouslySetInnerHTML={{
+              __html: marked.parse(problem.problemStatement) as string
+            }}/>
         </Card>
       </div>
 
