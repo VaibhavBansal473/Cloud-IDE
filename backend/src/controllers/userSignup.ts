@@ -32,7 +32,8 @@ export const userSignupController = async(req : Request,res: Response)=>{
 
         const totp = getOTP(email, "AUTH");
         const message = `Your OTP for Cloud IDE is ${totp}`;
-        sendMail(email,message);
+        await sendMail(email, message);
+        console.log("OTP sent to:", email);
 
         res.status(200).json({
             message : "otp sent"

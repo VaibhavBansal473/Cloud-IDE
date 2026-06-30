@@ -1,29 +1,22 @@
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
-const sendMail = (email: string, message: string)=> {
-    
-    var transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: `${process.env.MAIL}`,
-          pass: `${process.env.MAIL_PASS}`
-        }
-      });
-      
-      var mailOptions = {
-        from: `${process.env.MAIL}`,
-        to: `${email}`,
-        subject: 'OTP for Cloud IDE',
-        text: message
-      };
-      
-      transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Email sent: ' + info.response);
-        }
-      }); 
-}
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.MAIL,
+    pass: process.env.MAIL_PASS,
+  },
+});
 
-export default sendMail
+const sendMail = async (email: string, message: string) => {
+  const info = await transporter.sendMail({
+    from: process.env.MAIL,
+    to: email,
+    subject: "OTP for Cloud IDE",
+    text: message,
+  });
+
+  console.log("Email sent:", info.response);
+};
+
+export default sendMail;
