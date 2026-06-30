@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@getbrevo/brevo": "^5.0.4",
     "@prisma/client": "^6.2.1",
     "@types/authenticator": "^1.1.4",
     "@types/axios": "^0.9.36",
