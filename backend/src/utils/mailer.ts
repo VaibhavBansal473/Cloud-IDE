@@ -1,10 +1,9 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: "smtp-relay.brevo.com",
   port: 587,
   secure: false,
-  requireTLS: true,
   auth: {
     user: process.env.MAIL,
     pass: process.env.MAIL_PASS,
@@ -12,14 +11,8 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendMail = async (email: string, message: string) => {
-  console.log("Verifying SMTP connection...");
-
-  await transporter.verify();
-
-  console.log("SMTP verified.");
-
   const info = await transporter.sendMail({
-    from: process.env.MAIL,
+    from: process.env.SENDER_EMAIL,
     to: email,
     subject: "OTP for Cloud IDE",
     text: message,
