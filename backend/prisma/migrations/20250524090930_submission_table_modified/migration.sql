@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Submission" ADD COLUMN     "memory" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "stdout" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "time" TEXT NOT NULL DEFAULT '';

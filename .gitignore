@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist
+build
+
+# Dependency directories
+/.pnp
+.pnp.js
+
+# IDE or editor directories
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Prisma files (if you're using Prisma)
+prisma/dev.db
+
+# TypeScript
+*.tsbuildinfo
+
+#yarn.lock (if you don't want to track them)
+yarn.lock
+
+# Temporary files
+*.swp
+*.swo
