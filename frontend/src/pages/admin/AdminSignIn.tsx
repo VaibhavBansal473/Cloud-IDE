@@ -19,7 +19,7 @@ export default function AdminSignIn() {
     e.preventDefault();
     // Handle admin authentication
     try {
-      await axios.post("http://localhost:8000/api/admin/auth/signin", {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/auth/signin`, {
         email: formData.email,
         password: formData.password
       },{

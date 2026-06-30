@@ -52,7 +52,7 @@ export default function SignUp() {
   const onSubmit = async(data: z.infer<typeof FormSchema>) => {
 
     try{
-      const res = await axios.post("http://localhost:8000/api/user/auth/signup/verify",{
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/auth/signup/verify`,{
       email,
       otp:data.pin
     },{
@@ -72,7 +72,7 @@ export default function SignUp() {
   const handleSendOTP = async(e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8000/api/user/auth/signup", {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/auth/signup`, {
         email: email,
         name: name
       },{

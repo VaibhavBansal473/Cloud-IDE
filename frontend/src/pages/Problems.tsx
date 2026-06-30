@@ -45,7 +45,7 @@ export default function Problems() {
   useEffect(()=>{
     const getProblems = async()=>{
       try {
-        const response = await axios.get<Problem[]>("http://localhost:8000/api/user/allProblems",{withCredentials:true});
+        const response = await axios.get<Problem[]>(`${import.meta.env.VITE_BACKEND_URL}/api/user/allProblems`,{withCredentials:true});
         setproblems(response.data);
       } catch (error) {
         toast.error("Something went wrong");

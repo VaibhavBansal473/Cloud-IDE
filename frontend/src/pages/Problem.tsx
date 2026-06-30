@@ -115,7 +115,7 @@ export default function Problem() {
   useEffect(() => {
     const getProblems = async () => {
       try {
-        const res = await axios.get<Problem>(`http://localhost:8000/api/user/problem/${problemId}`, { withCredentials: true });
+        const res = await axios.get<Problem>(`${import.meta.env.VITE_BACKEND_URL}/api/user/problem/${problemId}`, { withCredentials: true });
         setProblem(res.data);
       } catch (error) {
         toast.error("Something went wrong");
@@ -144,7 +144,7 @@ export default function Problem() {
       }
 
       try {
-        const statusRes = await axios.get<pollType>(`http://localhost:8000/api/user/status/${submissionId}`, {
+        const statusRes = await axios.get<pollType>(`${import.meta.env.VITE_BACKEND_URL}/api/user/status/${submissionId}`, {
           withCredentials: true
         });
 
@@ -176,7 +176,7 @@ export default function Problem() {
     const languageId = languages[language as keyof typeof languages].languageId;
 
     const res = await axios.post<SubmitType>(
-      `http://localhost:8000/api/user/submit/${problemId}`,
+      `${import.meta.env.VITE_BACKEND_URL}/api/user/submit/${problemId}`,
       {
         sourceCode: code,
         languageId,

@@ -45,7 +45,7 @@ export function AddAdminForm() {
     // Here you would typically send a request to your API to create a new admin
     try {
         setIsLoading(true)
-        await axios.post("http://localhost:8000/api/superAdmin/addAdmin",{
+        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/superAdmin/addAdmin`,{
             email: values.email,
             password: values.password,
             confirmPassword: values.confirmPassword

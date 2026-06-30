@@ -15,9 +15,11 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', '*'],  
-    // methods: ['GET', 'POST', 'PUT', 'PATCH' , 'DELETE'],
-    credentials: true, 
+    origin: [
+      "http://localhost:5173",
+      "https://cloud-ide.vercel.app"
+    ],
+    credentials: true,
   })
 );
 

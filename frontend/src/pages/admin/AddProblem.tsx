@@ -25,7 +25,7 @@ export default function AdminAddProblem() {
     e.preventDefault();
     
     try {
-      await axios.post("http://localhost:8000/api/admin/addProblem",{
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/addProblem`,{
         visible: formData.visible,
         name: formData.title,
         level: formData.level,

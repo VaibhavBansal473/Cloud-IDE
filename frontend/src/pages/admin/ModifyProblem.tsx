@@ -50,7 +50,7 @@ export default function AdminModifyProblem() {
           input: string;
           level: string;
           name: string;
-        }>(`http://localhost:8000/api/admin/problem/${problemId}`, {
+        }>(`${import.meta.env.VITE_BACKEND_URL}/api/admin/problem/${problemId}`, {
           withCredentials: true,
         });
 
@@ -74,7 +74,7 @@ export default function AdminModifyProblem() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await axios.patch(
-      `http://localhost:8000/api/admin/problem/${problemId}/update`,
+      `${import.meta.env.VITE_BACKEND_URL}/api/admin/problem/${problemId}/update`,
       {
         visible: formData.visible,
         name: formData.name,
@@ -94,7 +94,7 @@ export default function AdminModifyProblem() {
   const handleDelete = async () => {
     try {
       await axios.delete(
-        `http://localhost:8000/api/admin/problem/${problemId}/delete`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/problem/${problemId}/delete`,
         { withCredentials: true }
       );
       toast.success('Problem deleted successfully');

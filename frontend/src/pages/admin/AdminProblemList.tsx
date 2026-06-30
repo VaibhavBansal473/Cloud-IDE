@@ -41,7 +41,7 @@ export default function AdminProblemList() {
   useEffect(()=>{
     const getProblems = async()=>{
       try {
-        const response = await axios.get<Problem[]>("http://localhost:8000/api/admin/allProblems",{withCredentials:true});
+        const response = await axios.get<Problem[]>(`${import.meta.env.VITE_BACKEND_URL}/api/admin/allProblems`,{withCredentials:true});
         if(!response){
           toast.error("Could not get the problems");
           navigate("/admin/signin");

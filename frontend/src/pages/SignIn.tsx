@@ -50,7 +50,7 @@ export default function AdminSignIn() {
   const onSubmit = async(data: z.infer<typeof FormSchema>) => {
 
     try{
-    const res = await axios.post("http://localhost:8000/api/user/auth/signin/verify",{
+    const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/auth/signin/verify`,{
       email,
       otp: data.pin
     },{
@@ -70,7 +70,7 @@ export default function AdminSignIn() {
   const handleSendOTP = async(e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await axios.post("http://localhost:8000/api/user/auth/signin",{
+    const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/auth/signin`,{
       email
     },{
       withCredentials:true,

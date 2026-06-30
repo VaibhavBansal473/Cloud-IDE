@@ -46,7 +46,7 @@ export function SuperAdminSignIn() {
 
     try {
       setIsLoading(true)
-      await axios.post("http://localhost:8000/api/superAdmin/signin",{
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/superAdmin/signin`,{
         email: values.email,
         password: values.password
       },{
