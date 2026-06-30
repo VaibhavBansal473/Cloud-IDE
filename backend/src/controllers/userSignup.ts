@@ -41,9 +41,12 @@ export const userSignupController = async(req : Request,res: Response)=>{
 
 
     } catch (e) {
-        console.log("error in signup controller " + e);
-        res.status(500).json({message : "Internal server error"});
-    }
+    console.error("Signin controller error:", e);
+    res.status(500).json({
+        message: "Internal server error",
+        error: e instanceof Error ? e.message : String(e)
+    });
+}
 }
 
 export const userSignupVerifyController = async(req : Request,res: Response)=>{
