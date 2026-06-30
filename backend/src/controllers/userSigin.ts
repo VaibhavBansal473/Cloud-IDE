@@ -104,10 +104,11 @@ export const userSigninVerifyController = async (
     });
 
     res.cookie("jwtCloudIDE", token, {
-      maxAge: 15 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      secure: false,
-    });
+    maxAge: 15 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+});
 
     res.status(200).json({
       userId: user.id,
