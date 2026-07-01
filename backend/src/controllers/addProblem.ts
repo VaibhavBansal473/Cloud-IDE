@@ -1,43 +1,62 @@
-import { Request, Response } from "express"
-import { addProblemZodSchema } from "../zod/problemsSchema";
+import { Request, Response } from "express";
 import { db } from "../db";
+import { Difficulty } from "@prisma/client";
+import { addProblemZodSchema } from "../zod/problemsSchema";
 
-const addProblem  = async(req: Request, res: Response) => {
-    try {
-        const data = addProblemZodSchema.safeParse(req.body);
-        if(!data.success){
-            res.status(400).json({message: "invalid inputs"});
-            return;
-        }
+const addProblem = async (req: Request, res: Response) => {
+  try {
+    const data = addProblemZodSchema.safeParse(req.body);
 
-        const adminId = req.User?.id;
-        if(!adminId){
-            res.status(400).json({message : "log in as an admin"});
-            return;
-        }
-
-        const { visible , name , level , problemStatement , testCases , expectedOutput , input } = data.data;
-
-        const problem = await db.problem.create({
-            data:{
-                visible,
-                name,
-                level,
-                problemStatement,
-                testCases,
-                expectedOutput,
-                input,
-                adminId
-            }
-        });
-
-        res.status(200).json({
-            id: problem.id
-        });
-        
-    } catch (error) {
-        console.log("error in add problem controller "+error);
-        res.status(500).json({message : "Internal server error"});
+    if (!data.success) {
+      res.status(400).json({ message: "Invalid inputs" });
+      return;
     }
-}
-export default addProblem
+
+    const adminId = req.User?.id;
+
+    if (!adminId) {
+      res.status(401).json({ message: "Login as admin" });
+      return;
+    }
+
+    const {
+      visible,
+      name,
+      level,
+      tags,
+      problemStatement,
+      sampleInput,
+      sampleOutput,
+      testCases,
+    } = data.data;
+
+    const problem = await db.problem.create({
+      data: {
+        visible,
+        name,
+        level: level as Difficulty,
+        tags,
+        problemStatement,
+        sampleInput,
+        sampleOutput,
+
+        testCases: {
+          create: testCases,
+        },
+
+        adminId,
+      },
+    });
+
+    res.status(200).json({
+      id: problem.id,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export default addProblem;
