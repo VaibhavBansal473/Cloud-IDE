@@ -27,6 +27,7 @@ interface Problem {
   name: string;
   level: string;
   visible: boolean;
+  tags: string[];
 }
 
 
@@ -34,7 +35,7 @@ export default function Problems() {
   const [page, setPage] = useState(1);
   const [problems , setproblems] = useState<Problem[]>([]);
   const problemsPerPage = 10;
-  const totalPages = Math.ceil(problems.length / problemsPerPage);
+  const totalPages = Math.max(1,Math.ceil(problems.length / problemsPerPage));
   const navigate = useNavigate();
 
   const currentProblems = problems.slice(
@@ -62,6 +63,9 @@ export default function Problems() {
         <p className="text-muted-foreground">
           Practice coding with our collection of programming challenges
         </p>
+        <p className="text-sm text-muted-foreground mt-2">
+          {problems.length} Problems Available
+        </p>
       </div>
 
       <div className="w-full">
@@ -70,38 +74,56 @@ export default function Problems() {
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
-              <TableHead>Level</TableHead>
-              <TableHead className='text-right'>Action</TableHead>
+              <TableHead>Difficulty</TableHead>
+              <TableHead>Tags</TableHead>
+              <TableHead className="text-right">Action</TableHead>
 
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentProblems.map((problem) => (
               <TableRow key={problem.id}>
-                <TableCell className='font-medium'>
-                    {problem.name}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      problem.level === 'easy'
-                        ? 'outline'
-                        : problem.level === 'medium'
-                        ? 'default'
-                        : 'destructive'
-                    }
-                  >
-                    {problem.level}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Link to={`/problem/${problem.id}`}>
-                    <Button variant="outline" size="sm">
-                      Solve
-                    </Button>
-                  </Link>
-                </TableCell>
-              </TableRow>
+              <TableCell className="font-medium">
+                {problem.name}
+              </TableCell>
+
+              <TableCell>
+                <Badge
+                  className={
+                    problem.level === "EASY"
+                      ? "bg-green-100 text-green-700 hover:bg-green-100"
+                      : problem.level === "MEDIUM"
+                      ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
+                      : "bg-red-100 text-red-700 hover:bg-red-100"
+                  }
+                >
+                  {problem.level.charAt(0) + problem.level.slice(1).toLowerCase()}
+                </Badge>
+              </TableCell>
+
+              {/* NEW CELL */}
+              <TableCell>
+                <div className="flex flex-wrap gap-1">
+                  {problem.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="text-xs"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </TableCell>
+
+              <TableCell className="text-right">
+                <Link to={`/problem/${problem.id}`}>
+                  <Button size="sm">
+                    Solve →
+                  </Button>
+                </Link>
+              </TableCell>
+            </TableRow>
             ))}
           </TableBody>
         </Table>

@@ -6,60 +6,59 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play } from 'lucide-react';
+import { Badge} from "@/components/ui/badge";
 import axios from 'axios';
 import { toast } from 'sonner';
+import { Play } from 'lucide-react';
 
 
 
 const languages = {
   javascript: {
-    name: 'JavaScript',
+    name: "JavaScript",
     languageId: 63,
-    template: '',
+    template: "",
   },
   python: {
-    name: 'Python',
+    name: "Python",
     languageId: 71,
-    template: '',
+    template: "",
   },
   cpp: {
-    name: 'C++',
+    name: "C++",
     languageId: 54,
-    template: '',
+    template: "",
   },
   java: {
-    name: 'Java',
+    name: "Java",
     languageId: 62,
-    template: '',
+    template: "",
   },
   c: {
-    name: 'C',
+    name: "C",
     languageId: 50,
-    template: '',
+    template: "",
   },
   ruby: {
-    name: 'Ruby',
+    name: "Ruby",
     languageId: 72,
-    template: '',
+    template: "",
   },
   rust: {
-    name: 'Rust',
+    name: "Rust",
     languageId: 73,
-    template: '',
+    template: "",
   },
 };
 
-
-interface pollType {
+interface PollType {
   status: string;
   output: {
     time: string;
     memory: number;
     stdout: string;
-  }
-}
-
+  };
+};
 
 interface SubmitType {
   submissionId: string;
@@ -67,113 +66,119 @@ interface SubmitType {
 
 interface Problem {
   id: string;
-  expectedOutput: string;
-  problemStatement: string;
-  testCases: string;
-  input: string;
-  level: string;
   name: string;
+  level: string;
+  tags: string[];
+  problemStatement: string;
+  sampleInput: string;
+  sampleOutput: string;
 }
+
+
 
 export default function Problem() {
   const { problemId } = useParams();
-  const [language, setLanguage] = useState('cpp');
-  const [code, setCode] = useState('');
   const navigate = useNavigate();
-  const [problem, setProblem] = useState<Problem>({
-    id: "",
-    expectedOutput: "",
-    problemStatement: "",
-    testCases: "",
-    input: "",
-    level: "",
-    name: "",
-  });
 
-  const [submissionStatus, setSubmissionStatus] = useState('');
-  const [output, setOutput] = useState<{
-    time: string;
-    memory: number;
-    stdout: string;
-  }>({
+  const [language, setLanguage] = useState("cpp");
+  const [code, setCode] = useState("");
 
-    time: '',
+  const [problem, setProblem] = useState<Problem | null>(null);
+
+  const [submissionStatus, setSubmissionStatus] = useState("");
+
+  const [output, setOutput] = useState({
+    time: "",
     memory: 0,
-    stdout: '',
-
+    stdout: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('code');
+const [activeTab, setActiveTab] = useState("code");
 
+const handleLanguageChange = (value: string) => {
+  setLanguage(value);
+  setCode(languages[value as keyof typeof languages].template);
+};
 
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value);
-    setCode(languages[value as keyof typeof languages].template);
-  };
-
-
-  useEffect(() => {
-    const getProblems = async () => {
-      try {
-        const res = await axios.get<Problem>(`${import.meta.env.VITE_BACKEND_URL}/api/user/problem/${problemId}`, { withCredentials: true });
-        setProblem(res.data);
-      } catch (error) {
-        toast.error("Something went wrong");
-        navigate("/");
-      }
-    }
-    getProblems();
-  }, [])
-
-
-  const pollSubmissionStatus = async (submissionId: string) => {
-    const maxDuration = 5 * 60 * 1000; // 5 minutes in milliseconds
-    const startTime = Date.now();
-
-    const interval = setInterval(async () => {
-      const elapsed = Date.now() - startTime;
-
-      // Stop polling after 5 minutes
-      if (elapsed >= maxDuration) {
-        clearInterval(interval);
-        setIsLoading(false);
-        setSubmissionStatus('timeout');
-        setActiveTab('Submission');
-        toast.error('Submission timed out.');
-        return;
-      }
-
-      try {
-        const statusRes = await axios.get<pollType>(`${import.meta.env.VITE_BACKEND_URL}/api/user/status/${submissionId}`, {
-          withCredentials: true
-        });
-
-        const status = statusRes.data.status;
-
-        if (status !== 'pending') {
-          clearInterval(interval);
-          setIsLoading(false);
-          setSubmissionStatus(status);
-          setOutput(statusRes.data.output);
-          setActiveTab('Submission');
+useEffect(() => {
+  const getProblem = async () => {
+    try {
+      const res = await axios.get<Problem>(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/problem/${problemId}`,
+        {
+          withCredentials: true,
         }
+      );
 
-      } catch (err) {
-        clearInterval(interval);
-        setIsLoading(false);
-        setSubmissionStatus('error');
-        toast.error("Error fetching submission status.");
-      }
-    }, 2000); // Poll every 2 seconds
+      setProblem(res.data);
+    } catch (error) {
+      toast.error("Failed to load problem.");
+      navigate("/");
+    }
   };
 
+  if (problemId) {
+    getProblem();
+  }
+}, [problemId, navigate]);
 
-  const handleSubmit = async () => {
+const pollSubmissionStatus = async (submissionId: string) => {
+  const maxDuration = 5 * 60 * 1000;
+  const startTime = Date.now();
+
+  const interval = setInterval(async () => {
+    if (Date.now() - startTime >= maxDuration) {
+      clearInterval(interval);
+      setIsLoading(false);
+      setSubmissionStatus("timeout");
+      setActiveTab("Submission");
+      toast.error("Submission timed out.");
+      return;
+    }
+
+    try {
+      const statusRes = await axios.get<PollType>(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/status/${submissionId}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      const status = statusRes.data.status;
+
+      if (status !== "pending") {
+        clearInterval(interval);
+
+        setSubmissionStatus(status);
+        setOutput(statusRes.data.output);
+        setIsLoading(false);
+        setActiveTab("Submission");
+      }
+    } catch (error) {
+      clearInterval(interval);
+
+      setIsLoading(false);
+      setSubmissionStatus("error");
+
+      toast.error("Failed to fetch submission status.");
+    }
+  }, 2000);
+};
+
+const handleSubmit = async () => {
+  if (isLoading) return;
+
+  if (!code.trim()) {
+    toast.error("Please write some code before submitting.");
+    return;
+  }
+
   try {
     setIsLoading(true);
-    setSubmissionStatus('pending');
+    setSubmissionStatus("pending");
 
-    const languageId = languages[language as keyof typeof languages].languageId;
+    const languageId =
+      languages[language as keyof typeof languages].languageId;
 
     const res = await axios.post<SubmitType>(
       `${import.meta.env.VITE_BACKEND_URL}/api/user/submit/${problemId}`,
@@ -181,130 +186,212 @@ export default function Problem() {
         sourceCode: code,
         languageId,
       },
-      { withCredentials: true }
+      {
+        withCredentials: true,
+      }
     );
 
-    const submissionId = res.data.submissionId;
-    pollSubmissionStatus(submissionId);
-
+    pollSubmissionStatus(res.data.submissionId);
   } catch (error) {
+    setSubmissionStatus("error");
     setIsLoading(false);
-    setSubmissionStatus('error');
-    toast.error("An error occurred");
-  }
 
-  // console.log('Submitting code:', {
-  //   language,
-  //   languageId: languages[language as keyof typeof languages].languageId,
-  //   code,
-  // });
+    toast.error("Failed to submit code.");
+  }
 };
 
-
+if (!problem) {
   return (
+    <div className="flex items-center justify-center h-[70vh]">
+      Loading problem...
+    </div>
+  );
+}
+return (
+    
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <div className="space-y-4">
-        <Card className="p-6">
-          <h1 className="text-2xl font-bold">{problem.name}</h1>
-          <div
-            className="mt-4 prose prose-neutral dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{
-              __html: marked.parse(problem.problemStatement) as string
-            }}/>
-        </Card>
-      </div>
+      <Card className="p-6 space-y-5">
+        <div>
+          <h1 className="text-3xl font-bold">{problem?.name}</h1>
 
-      <div className="space-y-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="code">Code</TabsTrigger>
-            <TabsTrigger value="Submission">Submission</TabsTrigger>
-          </TabsList>
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <Badge
+              className={
+                problem?.level === "EASY"
+                  ? "bg-green-100 text-green-700"
+                  : problem?.level === "MEDIUM"
+                  ? "bg-yellow-100 text-yellow-700"
+                  : "bg-red-100 text-red-700"
+              }
+            >
+              {problem?.level.charAt(0) +
+                problem?.level.slice(1).toLowerCase()}
+            </Badge>
 
-          <TabsContent value="code" className="space-y-4 relative">
-            <Select value={language} onValueChange={handleLanguageChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Language" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(languages).map(([key, { name }]) => (
-                  <SelectItem key={key} value={key}>
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {problem?.tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="text-xs"
+              >
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
 
-            <div className="relative rounded-md border">
-              <Editor
-                height="60vh"
-                language={language === 'cpp' ? 'cpp' : language}
-                theme="vs-dark"
-                value={code}
-                onChange={(value) => setCode(value || '')}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                }}
-              />
-              {isLoading && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm text-white">
-                  <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin mb-2"></div>
-                  <p>Running your code...</p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-end">
-              <Button onClick={handleSubmit} disabled={isLoading}>
-                <Play className="mr-2 h-4 w-4" />
-                Run Code
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="Submission">
-            <Card className="p-4 space-y-2">
-              {!isLoading && submissionStatus ? (
-                <>
-                  <p className="text-lg font-semibold">
-                    Result:{' '}
-                    <span className={
-                      submissionStatus === 'Accepted' ? 'text-green-600' :
-                        submissionStatus === 'Wrong Answer' ? 'text-yellow-600' :
-                          ['Compilation Error', 'Runtime Error (NZEC)', 'Rejected'].includes(submissionStatus)
-                            ? 'text-red-600' : 'text-gray-600'
-                    }>
-                      {submissionStatus}
-                    </span>
-                  </p>
-                  {output && (
-                    <>
-                      <p className="font-medium">Input:</p>
-                      <pre className="bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap">{problem.input}</pre>
-
-                      <p className="font-medium mt-4">Expected Output:</p>
-                      <pre className="bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap">{problem.expectedOutput}</pre>
-
-                      <p className="font-medium mt-4">Output:</p>
-                      <pre className="bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap">{output.stdout}</pre>
-
-                      <p className="mt-2">
-                        <span className="font-semibold">Time:</span> {output.time} seconds
-                      </p>
-                      <p>
-                        <span className="font-semibold">Memory:</span> {output.memory} KB
-                      </p>
-                    </>
-                  )}
-                </>
-              ) : (
-                <p>Submission result will be displayed here</p>
-              )}
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+        <div
+          className="prose prose-neutral dark:prose-invert max-w-none"
+          dangerouslySetInnerHTML={{
+            __html: marked.parse(problem?.problemStatement || "") as string,
+          }}
+        />
+      </Card>
     </div>
+  
+    
+    <div className="space-y-4">
+  <Tabs value={activeTab} onValueChange={setActiveTab}>
+    <TabsList>
+      <TabsTrigger value="code">Code</TabsTrigger>
+      <TabsTrigger value="Submission">Submission</TabsTrigger>
+    </TabsList>
+
+    <TabsContent value="code" className="space-y-4 relative">
+      <Select value={language} onValueChange={handleLanguageChange}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select Language" />
+        </SelectTrigger>
+
+        <SelectContent>
+          {Object.entries(languages).map(([key, { name }]) => (
+            <SelectItem key={key} value={key}>
+              {name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <div className="relative rounded-md border">
+        <Editor
+          height="60vh"
+          language={language === "cpp" ? "cpp" : language}
+          theme="vs-dark"
+          value={code}
+          onChange={(value) => setCode(value || "")}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+          }}
+        />
+
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm text-white">
+            <div className="h-8 w-8 border-2 border-white border-t-transparent rounded-full animate-spin mb-3"></div>
+
+            <p className="font-medium">
+              Running against hidden test cases...
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSubmit} disabled={isLoading}>
+          <Play className="mr-2 h-4 w-4" />
+          {isLoading ? "Running..." : "Run Code"}
+        </Button>
+      </div>
+    </TabsContent>
+
+    <TabsContent value="Submission">
+      <Card className="p-6 space-y-5">
+        {!isLoading && submissionStatus ? (
+          <>
+            <div>
+              <p className="text-xl font-semibold">
+                Result:
+              </p>
+
+              <p
+                className={`mt-2 text-lg font-bold ${
+                  submissionStatus === "Accepted"
+                    ? "text-green-600"
+                    : submissionStatus === "Wrong Answer"
+                    ? "text-yellow-600"
+                    : submissionStatus === "Compilation Error" ||
+                      submissionStatus === "Runtime Error (NZEC)" ||
+                      submissionStatus === "Rejected"
+                    ? "text-red-600"
+                    : "text-gray-600"
+                }`}
+              >
+                {submissionStatus}
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-2">
+                Sample Input
+              </p>
+
+              <pre className="bg-gray-100 dark:bg-zinc-900 p-3 rounded text-sm whitespace-pre-wrap">
+                {problem.sampleInput}
+              </pre>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-2">
+                Expected Output
+              </p>
+
+              <pre className="bg-gray-100 dark:bg-zinc-900 p-3 rounded text-sm whitespace-pre-wrap">
+                {problem.sampleOutput}
+              </pre>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-2">
+                Your Output
+              </p>
+
+              <pre className="bg-gray-100 dark:bg-zinc-900 p-3 rounded text-sm whitespace-pre-wrap min-h-[80px]">
+                {output.stdout || "No Output"}
+              </pre>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Card className="p-4">
+                <p className="text-sm text-muted-foreground">
+                  Execution Time
+                </p>
+
+                <p className="text-lg font-semibold">
+                  {output.time || "0"} sec
+                </p>
+              </Card>
+
+              <Card className="p-4">
+                <p className="text-sm text-muted-foreground">
+                  Memory Used
+                </p>
+
+                <p className="text-lg font-semibold">
+                  {output.memory} KB
+                </p>
+              </Card>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            Submit your code to see the execution result.
+          </div>    
+        )}
+      </Card>
+    </TabsContent>
+    </Tabs>
+  </div>
+</div>
   );
 }

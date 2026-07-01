@@ -53,8 +53,8 @@ const submitProblem = async (req: Request, res: Response) => {
             data: {
                 language_id: languageId,
                 source_code: sourceCode,
-                stdin: problem.input,
-                expected_output: problem.expectedOutput,
+                stdin: problem.sampleInput,
+                expected_output: problem.sampleOutput,
             },
         };
 
