@@ -34,7 +34,9 @@ export const adminSigninController = async (req: Request, res: Response) =>  {
 
         res.cookie("AdminTokenCloudIDE", token, {
             maxAge: 60*60*1000,
-            httpOnly: true
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
         })
 
         res.status(200).json({

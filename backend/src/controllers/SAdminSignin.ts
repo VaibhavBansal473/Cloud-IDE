@@ -22,10 +22,12 @@ const SAdminSignin= async(req:Request,res:Response)=>{
             expiresIn: '1h'
         });
 
-        res.cookie("SAdminTokenCloudIDE",token,{
-            maxAge: 60*60*1000,
-            httpOnly: true
-        })
+        res.cookie("SAdminTokenCloudIDE", token, {
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        });
 
         res.status(200).json({message: "seccess"});
 
