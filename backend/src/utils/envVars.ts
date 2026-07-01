@@ -5,8 +5,8 @@ export const S_ADMIN_JWT_SECRET = process.env.S_ADMIN_JWT_SECRET || "123123";
 
 export const SUBMISSION_URL =
     process.env.SUBMISSION_URL ||
-    "https://judge029.p.rapidapi.com/submissions";
+    "https://judge0-ce.p.rapidapi.com/submissions";
 
 export const STATUS_URL =
     process.env.STATUS_URL ||
-    "https://judge029.p.rapidapi.com/submissions";
+    "https://judge0-ce.p.rapidapi.com/submissions";
