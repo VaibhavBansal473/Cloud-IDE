@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge} from "@/components/ui/badge";
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Play } from 'lucide-react';
+import { Play, Terminal } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 
@@ -202,16 +203,27 @@ const handleSubmit = async () => {
 
 if (!problem) {
   return (
-    <div className="flex items-center justify-center h-[70vh]">
-      Loading problem...
+    <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-2">
+      <Card className="space-y-5 p-6">
+        <Skeleton className="h-9 w-2/3" />
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-6 w-24" />
+        </div>
+        <Skeleton className="h-72 w-full" />
+      </Card>
+      <Card className="space-y-4 p-6">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-[60vh] w-full" />
+      </Card>
     </div>
   );
 }
 return (
     
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-2">
       <div className="space-y-4">
-      <Card className="p-6 space-y-5">
+      <Card className="space-y-5 p-6">
         <div>
           <h1 className="text-3xl font-bold">{problem?.name}</h1>
 
@@ -219,10 +231,10 @@ return (
             <Badge
               className={
                 problem?.level === "EASY"
-                  ? "bg-green-100 text-green-700"
+                  ? "bg-emerald-100 text-emerald-700"
                   : problem?.level === "MEDIUM"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : "bg-red-100 text-red-700"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-rose-100 text-rose-700"
               }
             >
               {problem?.level.charAt(0) +
@@ -317,13 +329,13 @@ return (
               <p
                 className={`mt-2 text-lg font-bold ${
                   submissionStatus === "Accepted"
-                    ? "text-green-600"
+                    ? "text-emerald-600"
                     : submissionStatus === "Wrong Answer"
-                    ? "text-yellow-600"
+                    ? "text-amber-600"
                     : submissionStatus === "Compilation Error" ||
                       submissionStatus === "Runtime Error (NZEC)" ||
                       submissionStatus === "Rejected"
-                    ? "text-red-600"
+                    ? "text-rose-600"
                     : "text-gray-600"
                 }`}
               >
@@ -384,8 +396,14 @@ return (
             </div>
           </>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            Submit your code to see the execution result.
+          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+            <div className="mb-4 rounded-full bg-muted p-3">
+              <Terminal className="h-6 w-6" />
+            </div>
+            <p className="font-medium text-foreground">No submission yet</p>
+            <p className="mt-1 text-sm">
+              Submit your code to see execution status, output, time, and memory.
+            </p>
           </div>    
         )}
       </Card>

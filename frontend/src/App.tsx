@@ -12,19 +12,21 @@ import AdminAddProblem from './pages/admin/AddProblem';
 import AdminModifyProblem from './pages/admin/ModifyProblem';
 import { SuperAdminSignIn } from './pages/Sadmin/SuperAdminSignin';
 import { AddAdminForm } from './pages/Sadmin/AddAdmin';
+import AdminPortal from './pages/AdminPortal';
 
 function App() {
   return (
     <Router>
-      <div className="bg-background w-full h-full">
+      <div className="min-h-screen bg-background">
         <Navbar />
-        <main className="h-full w-full p-8">
+        <main className="min-h-[calc(100vh-4rem)] w-full px-4 py-8 sm:px-6 lg:px-8">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/problems" element={<Problems />} />
             <Route path="/problem/:problemId" element={<Problem />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/admin" element={<AdminPortal/>} />
             <Route path="/admin/signin" element={<AdminSignIn/>} />
             <Route path="/admin/problems" element={<AdminProblemList/>} />
             <Route path="/admin/problem/add" element={<AdminAddProblem/>} />

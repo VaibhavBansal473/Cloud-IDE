@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
+import { PageHeader } from "@/components/layout/PageHeader"
 
 const formSchema = z
   .object({
@@ -65,8 +66,13 @@ export function AddAdminForm() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md it">
+    <div className="mx-auto max-w-5xl space-y-8">
+      <PageHeader
+        eyebrow="Super Admin"
+        title="Add Admin"
+        description="Create a new admin account for problem management access."
+      />
+      <Card className="mx-auto w-full max-w-md shadow-sm">
         <CardHeader className="space-y-1 items-center" >
         <ShieldEllipsis className="h-14 w-14" />
           <CardTitle className="text-2xl font-bold text-center">Add New Admin</CardTitle>
@@ -84,7 +90,7 @@ export function AddAdminForm() {
                     <FormControl>
                       <div className="relative">
                         <Input placeholder="Enter admin email" {...field} className="pl-10" />
-                        <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                        <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -105,10 +111,10 @@ export function AddAdminForm() {
                           {...field}
                           className="pl-10 pr-10"
                         />
-                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                         <div
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-2.5 text-gray-400 hover:cursor-pointer"
+                          className="absolute right-3 top-2.5 text-muted-foreground hover:cursor-pointer"
                         >
                           {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                         </div>
@@ -132,10 +138,10 @@ export function AddAdminForm() {
                           {...field}
                           className="pl-10 pr-10"
                         />
-                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                         <div
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-2.5 text-gray-400 hover:cursor-pointer"
+                          className="absolute right-3 top-2.5 text-muted-foreground hover:cursor-pointer"
                         >
                           {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                         </div>
@@ -161,4 +167,3 @@ export function AddAdminForm() {
     </div>
   )
 }
-

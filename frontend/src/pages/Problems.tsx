@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Code2, Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -7,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Pagination,
   PaginationContent,
@@ -15,12 +16,14 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
-import { Badge } from '@/components/ui/badge';
-import axios from 'axios';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+} from "@/components/ui/pagination";
+import { Badge } from "@/components/ui/badge";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { TableSkeleton } from "@/components/shared/TableSkeleton";
 
 interface Problem {
   id: string;
@@ -30,12 +33,19 @@ interface Problem {
   tags: string[];
 }
 
+const difficultyClass = (level: string) =>
+  level === "EASY"
+    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+    : level === "MEDIUM"
+    ? "bg-amber-100 text-amber-700 hover:bg-amber-100"
+    : "bg-rose-100 text-rose-700 hover:bg-rose-100";
 
 export default function Problems() {
   const [page, setPage] = useState(1);
-  const [problems , setproblems] = useState<Problem[]>([]);
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const problemsPerPage = 10;
-  const totalPages = Math.max(1,Math.ceil(problems.length / problemsPerPage));
+  const totalPages = Math.max(1, Math.ceil(problems.length / problemsPerPage));
   const navigate = useNavigate();
 
   const currentProblems = problems.slice(
@@ -43,131 +53,137 @@ export default function Problems() {
     page * problemsPerPage
   );
 
-  useEffect(()=>{
-    const getProblems = async()=>{
+  useEffect(() => {
+    const getProblems = async () => {
       try {
-        const response = await axios.get<Problem[]>(`${import.meta.env.VITE_BACKEND_URL}/api/user/allProblems`,{withCredentials:true});
-        setproblems(response.data);
+        setIsLoading(true);
+        const response = await axios.get<Problem[]>(
+          `${import.meta.env.VITE_BACKEND_URL}/api/user/allProblems`,
+          { withCredentials: true }
+        );
+        setProblems(response.data);
       } catch (error) {
-        toast.error("Something went wrong");
+        toast.error("Could not load problems");
         navigate("/");
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
     getProblems();
-  },[])
-console.log("Page:", page);
+  }, [navigate]);
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Problems</h1>
-        <p className="text-muted-foreground">
-          Practice coding with our collection of programming challenges
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">
-          {problems.length} Problems Available
-        </p>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-8">
+      <PageHeader
+        eyebrow="Problem Set"
+        title="Problems"
+        description="Practice coding with a focused collection of programming challenges."
+        actions={
+          <div className="rounded-md border bg-card px-3 py-2 text-sm text-muted-foreground">
+            {problems.length} available
+          </div>
+        }
+      />
 
-      <div className="w-full">
-        <div className='rounded-md border max-w-6xl mx-auto'>
-        <Table >
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Difficulty</TableHead>
-              <TableHead>Tags</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+      {isLoading ? (
+        <TableSkeleton rows={8} columns={4} />
+      ) : problems.length === 0 ? (
+        <EmptyState
+          icon={Search}
+          title="No problems available"
+          description="There are no visible problems yet. Please check back after an admin publishes new challenges."
+        />
+      ) : (
+        <>
+          <div className="overflow-hidden rounded-lg border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Difficulty</TableHead>
+                  <TableHead>Tags</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentProblems.map((problem) => (
+                  <TableRow key={problem.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                          <Code2 className="h-4 w-4" />
+                        </span>
+                        {problem.name}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={difficultyClass(problem.level)}>
+                        {problem.level.charAt(0) +
+                          problem.level.slice(1).toLowerCase()}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {problem.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link to={`/problem/${problem.id}`}>
+                        <Button size="sm">Solve</Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentProblems.map((problem) => (
-              <TableRow key={problem.id}>
-              <TableCell className="font-medium">
-                {problem.name}
-              </TableCell>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage((p) => Math.max(1, p - 1));
+                  }}
+                />
+              </PaginationItem>
 
-              <TableCell>
-                <Badge
-                  className={
-                    problem.level === "EASY"
-                      ? "bg-green-100 text-green-700 hover:bg-green-100"
-                      : problem.level === "MEDIUM"
-                      ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
-                      : "bg-red-100 text-red-700 hover:bg-red-100"
-                  }
-                >
-                  {problem.level.charAt(0) + problem.level.slice(1).toLowerCase()}
-                </Badge>
-              </TableCell>
-
-              {/* NEW CELL */}
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {problem.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="text-xs"
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      href="#"
+                      isActive={page === pageNum}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(pageNum);
+                      }}
                     >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </TableCell>
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
 
-              <TableCell className="text-right">
-                <Link to={`/problem/${problem.id}`}>
-                  <Button size="sm">
-                    Solve →
-                  </Button>
-                </Link>
-              </TableCell>
-            </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        </div>
-      </div>
-
-     <Pagination>
-  <PaginationContent>
-    <PaginationItem>
-      <PaginationPrevious
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          setPage((p) => Math.max(1, p - 1));
-        }}
-      />
-    </PaginationItem>
-
-    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-      <PaginationItem key={pageNum}>
-        <PaginationLink
-          href="#"
-          isActive={page === pageNum}
-          onClick={(e) => {
-            e.preventDefault();
-            setPage(pageNum);
-          }}
-        >
-          {pageNum}
-        </PaginationLink>
-      </PaginationItem>
-    ))}
-
-    <PaginationItem>
-      <PaginationNext
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          setPage((p) => Math.min(totalPages, p + 1));
-        }}
-      />
-    </PaginationItem>
-  </PaginationContent>
-</Pagination>
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage((p) => Math.min(totalPages, p + 1));
+                  }}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </>
+      )}
     </div>
   );
 }

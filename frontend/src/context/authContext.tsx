@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, ReactNode } from "react";
+import { AuthSession, readAuthSession } from "@/lib/authSession";
 
 
 interface AuthContextType {
-  authUser: any; 
-  setAuthUser: React.Dispatch<React.SetStateAction<any>>; 
+  authUser: AuthSession | null;
+  setAuthUser: React.Dispatch<React.SetStateAction<AuthSession | null>>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,8 +26,8 @@ interface AuthContextProviderProps {
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   
-  const [authUser, setAuthUser] = useState<any>( 
-    JSON.parse(localStorage.getItem("Cloud-IDE") || "null")
+  const [authUser, setAuthUser] = useState<AuthSession | null>(
+    readAuthSession()
   );
 
   return (

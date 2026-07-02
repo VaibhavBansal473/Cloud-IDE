@@ -19,6 +19,8 @@ import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { useAuthContext } from '@/context/authContext'
+import { writeAuthSession } from '@/lib/authSession'
 
 const formSchema = z.object({
   email: z.string().email({
@@ -31,6 +33,7 @@ const formSchema = z.object({
 
 export function SuperAdminSignIn() {
   const router = useNavigate();
+  const { setAuthUser } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -52,10 +55,13 @@ export function SuperAdminSignIn() {
       },{
         withCredentials: true
       })
-      toast.success("Welcome back Sir");
+      const session = { role: "superadmin" as const, email: values.email };
+      writeAuthSession(session);
+      setAuthUser(session);
+      toast.success("Welcome back");
       router('/superadmin/addAdmin')
     } catch (error) {
-      
+      toast.error("Could not sign in as super admin");
     }finally{
       setIsLoading(false);
     }
@@ -63,8 +69,8 @@ export function SuperAdminSignIn() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md">
+    <div className="mx-auto flex min-h-[calc(100vh-10rem)] max-w-md items-center">
+      <Card className="w-full shadow-sm">
         <CardHeader className="space-y-1 items-center">
         <ShieldCheck className='h-20 w-20'/>
           <CardTitle className="text-2xl font-bold text-center">Super Admin</CardTitle>
@@ -84,7 +90,7 @@ export function SuperAdminSignIn() {
                     <FormControl>
                       <div className="relative">
                         <Input placeholder="Enter your email" {...field} className="pl-10" />
-                        <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                        <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -105,11 +111,11 @@ export function SuperAdminSignIn() {
                           {...field}
                           className="pl-10 pr-10"
                         />
-                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                         <div
                         //   type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1 text-gray-400 bg-background p-1 m-0 hover:cursor-pointer" 
+                          className="absolute right-3 top-1 text-muted-foreground bg-background p-1 m-0 hover:cursor-pointer" 
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />

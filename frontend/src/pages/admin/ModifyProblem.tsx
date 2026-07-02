@@ -19,6 +19,9 @@ import { Switch } from '@/components/ui/switch';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Save } from 'lucide-react';
 
 const mockProblem = {
   id: '',
@@ -43,10 +46,13 @@ export default function AdminModifyProblem() {
   const navigate = useNavigate();
   const { problemId } = useParams();
   const [formData, setFormData] = useState(mockProblem);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const getProblem = async () => {
       try {
+        setIsLoading(true);
         const response = await axios.get<{
           id: string;
           visible: boolean;
@@ -77,6 +83,8 @@ export default function AdminModifyProblem() {
       } catch (error) {
         toast.error('Something went wrong');
         navigate('/admin/problems');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -85,22 +93,29 @@ export default function AdminModifyProblem() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.patch(
-      `${import.meta.env.VITE_BACKEND_URL}/api/admin/problem/${problemId}/update`,
-      {
-        visible: formData.visible,
-        name: formData.name,
-        testCases: formData.testCases,
-        expectedOutput: formData.sampleOutput,
-        input: formData.sampleInput,
-        level: formData.level, // Include the level field in the request
-      },
-      {
-        withCredentials: true,
-      }
-    );
-    toast.success('Problem updated successfully');
-    navigate('/admin/problems');
+    try {
+      setIsSubmitting(true);
+      await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/problem/${problemId}/update`,
+        {
+          visible: formData.visible,
+          name: formData.name,
+          testCases: formData.testCases,
+          expectedOutput: formData.sampleOutput,
+          input: formData.sampleInput,
+          level: formData.level, // Include the level field in the request
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      toast.success('Problem updated successfully');
+      navigate('/admin/problems');
+    } catch (error) {
+      toast.error('Could not update problem');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -118,9 +133,25 @@ export default function AdminModifyProblem() {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl">
-      <Card className="p-6">
-        <h1 className="mb-6 text-2xl font-bold">Modify Problem</h1>
+    <div className="mx-auto max-w-5xl space-y-8">
+      <PageHeader
+        eyebrow="Admin Dashboard"
+        title="Modify Problem"
+        description="Update problem details, visibility, test data, or remove the challenge."
+      />
+
+      {isLoading ? (
+        <Card className="space-y-5 p-6 sm:p-8">
+          <Skeleton className="h-10 w-1/2" />
+          <Skeleton className="h-72 w-full" />
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        </Card>
+      ) : (
+      <Card className="p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
@@ -147,41 +178,44 @@ export default function AdminModifyProblem() {
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="visible"
-              checked={formData.visible}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, visible: checked })
-              }
-            />
-            <Label htmlFor="visible">Visible to users</Label>
-          </div>
+          <div className="grid gap-6 rounded-lg border bg-muted/20 p-4 sm:grid-cols-2">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="visible"
+                checked={formData.visible}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, visible: checked })
+                }
+              />
+              <Label htmlFor="visible">Visible to users</Label>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Difficulty Level</Label>
-            <div className="flex space-x-4">
-              {['easy', 'medium', 'hard'].map((level) => (
-                <div key={level} className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id={`level-${level}`}
-                    name="level"
-                    value={level}
-                    checked={formData.level === level}
-                    onChange={(e) =>
-                      setFormData({ ...formData, level: e.target.value })
-                    }
-                    className="cursor-pointer"
-                  />
-                  <Label htmlFor={`level-${level}`} className="cursor-pointer">
-                    {level.charAt(0).toUpperCase() + level.slice(1)}
-                  </Label>
-                </div>
-              ))}
+            <div className="space-y-2">
+              <Label>Difficulty Level</Label>
+              <div className="flex flex-wrap gap-4">
+                {['easy', 'medium', 'hard'].map((level) => (
+                  <div key={level} className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id={`level-${level}`}
+                      name="level"
+                      value={level}
+                      checked={formData.level === level}
+                      onChange={(e) =>
+                        setFormData({ ...formData, level: e.target.value })
+                      }
+                      className="cursor-pointer"
+                    />
+                    <Label htmlFor={`level-${level}`} className="cursor-pointer">
+                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
+          <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="testcases">Sample Test Cases</Label>
             <Textarea
@@ -199,7 +233,7 @@ export default function AdminModifyProblem() {
                   ],
                 })
               }
-              className="font-mono"
+              className="min-h-40 font-mono"
               placeholder="One test case per line"
               required
             />
@@ -213,7 +247,7 @@ export default function AdminModifyProblem() {
               onChange={(e) =>
                 setFormData({ ...formData, sampleInput: e.target.value })
               }
-              className="font-mono"
+              className="min-h-40 font-mono"
               placeholder="One test case per line"
               required
             />
@@ -227,13 +261,14 @@ export default function AdminModifyProblem() {
               onChange={(e) =>
                 setFormData({ ...formData, sampleOutput: e.target.value })
               }
-              className="font-mono"
+              className="min-h-40 font-mono"
               placeholder="One output per line"
               required
             />
           </div>
+          </div>
 
-          <div className="flex justify-between">
+          <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:justify-between">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive">Delete Problem</Button>
@@ -258,10 +293,14 @@ export default function AdminModifyProblem() {
               </AlertDialogContent>
             </AlertDialog>
 
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              <Save className="mr-2 h-4 w-4" />
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </form>
       </Card>
+      )}
     </div>
   );
 }

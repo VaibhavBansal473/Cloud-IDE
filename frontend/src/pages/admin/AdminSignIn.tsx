@@ -7,9 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { useAuthContext } from '@/context/authContext';
+import { writeAuthSession } from '@/lib/authSession';
 
 export default function AdminSignIn() {
   const navigate = useNavigate();
+  const { setAuthUser } = useAuthContext();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -19,26 +23,32 @@ export default function AdminSignIn() {
     e.preventDefault();
     // Handle admin authentication
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/auth/signin`, {
+      setIsLoading(true);
+      const res = await axios.post<{ id: string }>(`${import.meta.env.VITE_BACKEND_URL}/api/admin/auth/signin`, {
         email: formData.email,
         password: formData.password
       },{
         withCredentials: true
       })
+      const session = { role: "admin" as const, id: res.data.id, email: formData.email };
+      writeAuthSession(session);
+      setAuthUser(session);
       toast.success('Successfully signed in as admin');
       toast.success('This session is active for exactly 1 hour');
 
       navigate('/admin/problems');
 
     } catch (error) {
-      toast.error("something went wrong");
+      toast.error("Could not sign in as admin");
       toast.message("Check your credentials");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto flex h-[80vh] max-w-md items-center">
-      <Card className="w-full p-8">
+    <div className="mx-auto flex min-h-[calc(100vh-10rem)] max-w-md items-center">
+      <Card className="w-full p-8 shadow-sm">
         <div className="mb-8 text-center">
           <Shield className="mx-auto h-12 w-12" />
           <h1 className="mt-4 text-2xl font-semibold">Admin Access</h1>
@@ -74,8 +84,8 @@ export default function AdminSignIn() {
               required
             />
           </div>
-          <Button type="submit" className="w-full">
-            Sign In
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
       </Card>

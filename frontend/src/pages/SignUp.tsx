@@ -25,6 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
+import { writeAuthSession } from "@/lib/authSession";
 
 // Define schema for OTP validation
 const FormSchema = z.object({
@@ -38,6 +39,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [name , setName] = useState("");
   const [showOTP, setShowOTP] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { setAuthUser } = useAuthContext();
 
   // Initialize the form
@@ -52,19 +54,23 @@ export default function SignUp() {
   const onSubmit = async(data: z.infer<typeof FormSchema>) => {
 
     try{
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/auth/signup/verify`,{
+      setIsLoading(true);
+      const res = await axios.post<{ userId: string }>(`${import.meta.env.VITE_BACKEND_URL}/api/user/auth/signup/verify`,{
       email,
       otp:data.pin
     },{
       withCredentials:true,
     })
-      localStorage.setItem("cloud-IDE", JSON.stringify(res))
-      setAuthUser(res);
-      toast.success(`User Validated`);
+      const session = { role: "user" as const, id: res.data.userId };
+      writeAuthSession(session);
+      setAuthUser(session);
+      toast.success("Account verified successfully");
       navigate("/problems"); 
   }catch{
-      toast.error("Invalid OTP or OTP expired")
+      toast.error("Invalid or expired OTP")
       window.location.reload();
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,6 +78,7 @@ export default function SignUp() {
   const handleSendOTP = async(e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setIsLoading(true);
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/auth/signup`, {
         email: email,
         name: name
@@ -81,19 +88,21 @@ export default function SignUp() {
   
       if (response.status === 200) {
         setShowOTP(true);
-        toast.success("OTP sent to your email.");
+        toast.success("OTP sent to your email");
       } else {
         toast.error("Failed to send OTP. Please try again.");
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
-      toast.error("An error occurred while sending the OTP.");
+      toast.error("Could not send OTP. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto flex h-[80vh] max-w-md items-center">
-      <Card className="w-full p-8">
+    <div className="mx-auto flex min-h-[calc(100vh-10rem)] max-w-md items-center">
+      <Card className="w-full p-8 shadow-sm">
         <div className="mb-8 text-center">
           <Code2 className="mx-auto h-12 w-12" />
           <h1 className="mt-4 text-2xl font-semibold">Create an Account</h1>
@@ -128,8 +137,8 @@ export default function SignUp() {
               />
               
             </div>
-            <Button type="submit" className="w-full">
-              Send OTP
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Sending..." : "Send OTP"}
             </Button>
           </form>
         ) : (
@@ -137,7 +146,7 @@ export default function SignUp() {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="w-2/3 space-y-6"
+              className="space-y-6"
             >
               <FormField
                 control={form.control}
@@ -161,8 +170,8 @@ export default function SignUp() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Submit
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Verifying..." : "Submit"}
               </Button>
             </form>
           </Form>
