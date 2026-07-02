@@ -33,10 +33,19 @@ interface Problem {
 export default function AdminProblemList() {
   const [problems , setProblems] = useState<Problem[]>([]);
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+
   const problemsPerPage = 10;
-  const totalPages = Math.ceil(problems.length / problemsPerPage);
-  const currentPage = 1;
-  const currentProblems = problems.slice(0, problemsPerPage);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(problems.length / problemsPerPage)
+  );
+
+  const currentProblems = problems.slice(
+    (currentPage - 1) * problemsPerPage,
+    currentPage * problemsPerPage
+  );
 
   useEffect(()=>{
     const getProblems = async()=>{
@@ -101,23 +110,44 @@ export default function AdminProblemList() {
         </Table>
       </div>
 
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href="#" />
-          </PaginationItem>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <PaginationItem key={page}>
-              <PaginationLink href="#" isActive={currentPage === page}>
-                {page}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-          <PaginationItem>
-            <PaginationNext href="#" />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+     <Pagination>
+  <PaginationContent>
+    <PaginationItem>
+      <PaginationPrevious
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          setCurrentPage((p) => Math.max(1, p - 1));
+        }}
+      />
+    </PaginationItem>
+
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+      <PaginationItem key={page}>
+        <PaginationLink
+          href="#"
+          isActive={currentPage === page}
+          onClick={(e) => {
+            e.preventDefault();
+            setCurrentPage(page);
+          }}
+        >
+          {page}
+        </PaginationLink>
+      </PaginationItem>
+    ))}
+
+    <PaginationItem>
+      <PaginationNext
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          setCurrentPage((p) => Math.min(totalPages, p + 1));
+        }}
+      />
+    </PaginationItem>
+  </PaginationContent>
+</Pagination>
     </div>
   );
 }

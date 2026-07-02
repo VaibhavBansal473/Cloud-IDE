@@ -12,9 +12,9 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  // PaginationLink,
-  // PaginationNext,
-  // PaginationPrevious,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
 import axios from 'axios';
@@ -133,43 +133,38 @@ console.log("Page:", page);
      <Pagination>
   <PaginationContent>
     <PaginationItem>
-      <Button
-        variant="outline"
-        disabled={page === 1}
-        onClick={() => {
-          console.log("PREVIOUS CLICKED");
+      <PaginationPrevious
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
           setPage((p) => Math.max(1, p - 1));
         }}
-      >
-        Previous
-      </Button>
+      />
     </PaginationItem>
 
     {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
       <PaginationItem key={pageNum}>
-        <Button
-          variant={page === pageNum ? "default" : "outline"}
-          onClick={() => {
-            console.log("PAGE", pageNum);
+        <PaginationLink
+          href="#"
+          isActive={page === pageNum}
+          onClick={(e) => {
+            e.preventDefault();
             setPage(pageNum);
           }}
         >
           {pageNum}
-        </Button>
+        </PaginationLink>
       </PaginationItem>
     ))}
 
     <PaginationItem>
-      <Button
-        variant="outline"
-        disabled={page === totalPages}
-        onClick={() => {
-          console.log("NEXT CLICKED");
+      <PaginationNext
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
           setPage((p) => Math.min(totalPages, p + 1));
         }}
-      >
-        Next
-      </Button>
+      />
     </PaginationItem>
   </PaginationContent>
 </Pagination>
