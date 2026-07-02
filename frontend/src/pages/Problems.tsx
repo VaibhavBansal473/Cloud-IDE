@@ -18,20 +18,12 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
-
-interface Problem {
-  id: string;
-  name: string;
-  level: string;
-  visible: boolean;
-  tags: string[];
-}
+import { useProblems } from "@/hooks/useProblems";
 
 const difficultyClass = (level: string) =>
   level === "EASY"
@@ -42,8 +34,7 @@ const difficultyClass = (level: string) =>
 
 export default function Problems() {
   const [page, setPage] = useState(1);
-  const [problems, setProblems] = useState<Problem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { problems, isLoading, error } = useProblems();
   const problemsPerPage = 10;
   const totalPages = Math.max(1, Math.ceil(problems.length / problemsPerPage));
   const navigate = useNavigate();
@@ -54,23 +45,11 @@ export default function Problems() {
   );
 
   useEffect(() => {
-    const getProblems = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axios.get<Problem[]>(
-          `${import.meta.env.VITE_BACKEND_URL}/api/user/allProblems`,
-          { withCredentials: true }
-        );
-        setProblems(response.data);
-      } catch (error) {
-        toast.error("Could not load problems");
-        navigate("/");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    getProblems();
-  }, [navigate]);
+    if (error) {
+      toast.error("Could not load problems");
+      navigate("/");
+    }
+  }, [error, navigate]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">

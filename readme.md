@@ -1,42 +1,198 @@
-# Cloud IDE
+# 🚀 Cloud IDE
 
-Cloud IDE is an online code execution platform that allows users to submit code for evaluation against predefined test cases. It features **Judge0** for execution, **passwordless OTP-based authentication**, **role-based access control (RBAC)**, and **server-side caching** to optimize performance.
+Cloud IDE is a full-stack online coding platform where users can solve coding problems, write code in an in-browser editor, and execute solutions using Judge0.
 
-## 🚀 Features
-- **Code Evaluation:** Executes user-submitted code using **Judge0** with asynchronous result handling.
-- **Secure Authentication:** Implements **passwordless OTP-based login** with a **one-minute expiration**.
-- **Role-Based Access Control (RBAC):**
-  - **Super Admin:** Manages admins and has full platform control.
-  - **Admins:** Create, edit, and delete problems.
-- **Optimized Performance:**
-  - **Server-side caching** reduces database queries.
-  - **Judge0 instances run in Docker** with **horizontally scalable workers**.
-- **RESTful APIs:** Seamless interaction between frontend and backend.
-
-## 🛠️ Tech Stack
-- **Frontend:** React (TypeScript)
-- **Backend:** Express (TypeScript)
-- **Database:** PostgreSQL with Prisma ORM
-- **Code Execution:** Judge0 API (Dockerized & horizontally scalable workers)
-
-![Application Architecture](diagram.JPG)
-
-## 🔥 Usage
-1. **Sign up using OTP authentication** (passwordless login).
-2. **Super Admin assigns Admin roles.**
-3. **Admins create and manage coding problems.**
-4. **Users submit code for evaluation,** and results are displayed after execution.
-
-## 📌 Future Enhancements
-- **Real-time collaborative coding**
-- **AI-powered code suggestions**
-- **Custom test case submissions**
-
-## 🤝 Contributing
-Feel free to submit issues or pull requests to improve Cloud IDE!
-
-## 📜 License
-This project is licensed under the **MIT License**.
+The platform includes a complete role-based administration system for managing coding problems and demonstrates a production-style full-stack architecture using React, Express, PostgreSQL, and Prisma.
 
 ---
-🚀 **Cloud IDE – Efficient, Secure & Scalable Online Coding Platform**
+
+# ✨ Features
+
+## 👨‍💻 User Features
+
+- Secure user authentication
+- Browse coding problems
+- Solve problems using the Monaco code editor
+- Execute code using Judge0
+- View execution results
+- Responsive UI
+
+---
+
+## 🛠 Admin Features
+
+- Secure admin login
+- Create coding problems
+- Modify existing problems
+- Delete problems
+- Toggle problem visibility
+- Manage problem database
+
+---
+
+## 👑 Super Admin Features
+
+- Secure super admin login
+- Create administrator accounts
+- Manage platform administrators
+
+---
+
+## 🔐 Authentication & Security
+
+- JWT Authentication
+- HTTP-only Cookies
+- Role-Based Access Control (RBAC)
+- Protected Routes
+- Zod Request Validation
+
+---
+
+## ⚡ Code Execution
+
+- Judge0 API Integration
+- Multiple Programming Languages
+- Compilation Output
+- Runtime Error Handling
+- Execution Status Polling
+
+---
+
+# 🛠 Tech Stack
+
+### Frontend
+
+- React
+- TypeScript
+- React Router
+- Axios
+- Monaco Editor
+- Tailwind CSS
+- shadcn/ui
+
+### Backend
+
+- Express.js
+- TypeScript
+- Prisma ORM
+- JWT
+- Zod
+
+### Database
+
+- PostgreSQL
+
+### External Services
+
+- Judge0 API
+
+---
+
+# 🏗 Architecture
+
+![Architecture](diagram.JPG)
+
+---
+
+# 📌 Project Workflow
+
+### User
+
+1. Sign Up / Sign In
+2. Browse coding problems
+3. Write code using Monaco Editor
+4. Submit solution
+5. Backend sends code to Judge0
+6. Receive execution result
+
+### Admin
+
+1. Sign In
+2. Create new problems
+3. Edit existing problems
+4. Delete problems
+5. Manage visibility
+
+### Super Admin
+
+1. Sign In
+2. Create administrator accounts
+
+---
+
+# 🚀 Getting Started
+
+## Clone the repository
+
+```bash
+git clone <repository-url>
+```
+
+## Install dependencies
+
+Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+Backend
+
+```bash
+cd backend
+npm install
+```
+
+## Configure environment variables
+
+Create a `.env` file in both frontend and backend.
+
+## Run locally
+
+Backend
+
+```bash
+npm run dev
+```
+
+Frontend
+
+```bash
+npm run dev
+```
+
+---
+
+# 📈 Current Features
+
+- ✅ JWT Authentication
+- ✅ Role-Based Access Control
+- ✅ User, Admin & Super Admin Roles
+- ✅ Monaco Code Editor
+- ✅ Judge0 Integration
+- ✅ PostgreSQL Database
+- ✅ Prisma ORM
+- ✅ Problem Management
+- ✅ Responsive UI
+- ✅ Protected Routes
+
+---
+
+# 🚀 Future Improvements
+
+- Hidden test case evaluation
+- Batch Judge0 submissions
+- Submission history
+- Editorials
+- Tags & filtering
+- Contest mode
+- Leaderboards
+- User profiles
+- Runtime & memory analytics
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.

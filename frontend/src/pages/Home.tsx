@@ -3,9 +3,9 @@ import {
   BadgeCheck,
   Code2,
   Gauge,
-  Languages,
   LayoutDashboard,
   LockKeyhole,
+  MonitorCog,
   ServerCog,
   TerminalSquare,
   Users,
@@ -14,17 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { InfoCard } from "@/components/shared/InfoCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useProblems } from "@/hooks/useProblems";
 
 const features = [
   {
     icon: TerminalSquare,
     title: "Online Code Editor",
     description: "Write and run solutions in a focused browser-based editor.",
-  },
-  {
-    icon: Languages,
-    title: "Multiple Programming Languages",
-    description: "Practice with popular languages supported by the judge flow.",
   },
   {
     icon: ServerCog,
@@ -48,14 +45,27 @@ const features = [
   },
 ];
 
-const stats = [
-  { label: "Problems", value: "50+" },
-  { label: "Languages", value: "7" },
-  { label: "Users", value: "1k+" },
-  { label: "Admin Panel", value: "Live" },
+const platformHighlights = [
+  {
+    icon: ServerCog,
+    title: "Judge0 Integration",
+    description: "Code submissions run through the configured judge service.",
+  },
+  {
+    icon: LockKeyhole,
+    title: "Role-Based Access",
+    description: "User, admin, and super admin views stay clearly separated.",
+  },
+  {
+    icon: MonitorCog,
+    title: "Admin Panel",
+    description: "Admins can create, edit, publish, and manage problems.",
+  },
 ];
 
 export default function Home() {
+  const { problems, isLoading } = useProblems();
+
   return (
     <div className="mx-auto max-w-7xl space-y-16">
       <section className="overflow-hidden rounded-lg border bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_32%),linear-gradient(135deg,hsl(var(--background)),hsl(var(--muted)))] px-6 py-16 sm:px-10 lg:px-14">
@@ -110,10 +120,24 @@ export default function Home() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.label} className="p-5">
-            <p className="text-3xl font-semibold">{stat.value}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
+        <Card className="p-5">
+          {isLoading ? (
+            <Skeleton className="h-9 w-16" />
+          ) : (
+            <p className="text-3xl font-semibold">{problems.length}</p>
+          )}
+          <p className="mt-1 text-sm text-muted-foreground">Problems</p>
+        </Card>
+
+        {platformHighlights.map((item) => (
+          <Card key={item.title} className="p-5">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-muted">
+              <item.icon className="h-5 w-5 text-foreground" />
+            </div>
+            <p className="font-semibold">{item.title}</p>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              {item.description}
+            </p>
           </Card>
         ))}
       </section>
