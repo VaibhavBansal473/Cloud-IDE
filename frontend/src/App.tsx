@@ -13,6 +13,7 @@ import AdminModifyProblem from './pages/admin/ModifyProblem';
 import { SuperAdminSignIn } from './pages/Sadmin/SuperAdminSignin';
 import { AddAdminForm } from './pages/Sadmin/AddAdmin';
 import AdminPortal from './pages/AdminPortal';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 function App() {
   return (
@@ -22,8 +23,10 @@ function App() {
         <main className="min-h-[calc(100vh-4rem)] w-full px-4 py-8 sm:px-6 lg:px-8">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/problems" element={<Problems />} />
-            <Route path="/problem/:problemId" element={<Problem />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/problems" element={<Problems />} />
+              <Route path="/problem/:problemId" element={<Problem />} />
+            </Route>
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/admin" element={<AdminPortal/>} />

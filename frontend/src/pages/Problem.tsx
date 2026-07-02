@@ -11,6 +11,8 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { Play, Terminal } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { clearAuthSession } from '@/lib/authSession';
+import { useAuthContext } from '@/context/authContext';
 
 
 
@@ -80,6 +82,7 @@ interface Problem {
 export default function Problem() {
   const { problemId } = useParams();
   const navigate = useNavigate();
+  const { setAuthUser } = useAuthContext();
 
   const [language, setLanguage] = useState("cpp");
   const [code, setCode] = useState("");
@@ -113,6 +116,17 @@ useEffect(() => {
 
       setProblem(res.data);
     } catch (error) {
+      const status = (error as { response?: { status?: number } }).response
+        ?.status;
+
+      if (status === 401 || status === 403) {
+        clearAuthSession();
+        setAuthUser(null);
+        toast.error("Please sign in to view this problem.");
+        navigate("/signin");
+        return;
+      }
+
       toast.error("Failed to load problem.");
       navigate("/");
     }
@@ -121,7 +135,7 @@ useEffect(() => {
   if (problemId) {
     getProblem();
   }
-}, [problemId, navigate]);
+}, [problemId, navigate, setAuthUser]);
 
 const pollSubmissionStatus = async (submissionId: string) => {
   const maxDuration = 5 * 60 * 1000;

@@ -24,6 +24,8 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TableSkeleton } from "@/components/shared/TableSkeleton";
 import { useProblems } from "@/hooks/useProblems";
+import { clearAuthSession } from "@/lib/authSession";
+import { useAuthContext } from "@/context/authContext";
 
 const difficultyClass = (level: string) =>
   level === "EASY"
@@ -35,6 +37,7 @@ const difficultyClass = (level: string) =>
 export default function Problems() {
   const [page, setPage] = useState(1);
   const { problems, isLoading, error } = useProblems();
+  const { setAuthUser } = useAuthContext();
   const problemsPerPage = 10;
   const totalPages = Math.max(1, Math.ceil(problems.length / problemsPerPage));
   const navigate = useNavigate();
@@ -46,10 +49,21 @@ export default function Problems() {
 
   useEffect(() => {
     if (error) {
+      const status = (error as { response?: { status?: number } }).response
+        ?.status;
+
+      if (status === 401 || status === 403) {
+        clearAuthSession();
+        setAuthUser(null);
+        toast.error("Please sign in to view problems");
+        navigate("/signin");
+        return;
+      }
+
       toast.error("Could not load problems");
       navigate("/");
     }
-  }, [error, navigate]);
+  }, [error, navigate, setAuthUser]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
