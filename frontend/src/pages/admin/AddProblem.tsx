@@ -14,7 +14,7 @@ export default function AdminAddProblem() {
   const [formData, setFormData] = useState({
     title: '',
     statement: '',
-    level: "easy",
+    level: "EASY",
     visible: true,
     testcases: '',
     input: '',
@@ -25,17 +25,32 @@ export default function AdminAddProblem() {
     e.preventDefault();
     
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/addProblem`,{
-        visible: formData.visible,
-        name: formData.title,
-        level: formData.level,
-        problemStatement: formData.statement,
-        testCases: formData.testcases,
-        expectedOutput: formData.expectedOutput,
-        input: formData.input 
-      },{
-        withCredentials: true
-      })
+      await axios.post(
+  `${import.meta.env.VITE_BACKEND_URL}/api/admin/addProblem`,
+  {
+    visible: formData.visible,
+    name: formData.title,
+    level: formData.level.toUpperCase(),
+    tags: ["implementation"],
+
+    problemStatement: formData.statement,
+
+    sampleInput: formData.input,
+
+    sampleOutput: formData.expectedOutput,
+
+    testCases: [
+      {
+        input: formData.input,
+        output: formData.expectedOutput,
+        hidden: false,
+      },
+    ],
+  },
+  {
+    withCredentials: true,
+  }
+);
       
       toast.success('Problem created successfully');
       navigate('/admin/problems');

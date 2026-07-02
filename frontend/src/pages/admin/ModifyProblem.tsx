@@ -27,9 +27,16 @@ const mockProblem = {
   problemStatement: '',
   visible: true,
   adminId: '000',
-  testCases: '',
-  input: '',
-  expectedOutput: '',
+  tags: ["implementation"],
+  sampleInput: "",
+  sampleOutput: "",
+  testCases: [
+    {
+      input: "",
+      output: "",
+      hidden: false,
+    },
+  ],
 };
 
 export default function AdminModifyProblem() {
@@ -44,10 +51,15 @@ export default function AdminModifyProblem() {
           id: string;
           visible: boolean;
           adminId: string;
-          expectedOutput: string;
           problemStatement: string;
-          testCases: string;
-          input: string;
+          tags: string[];
+          sampleInput: string;
+          sampleOutput: string;
+          testCases: {
+            input: string;
+            output: string;
+            hidden: boolean;
+          }[];
           level: string;
           name: string;
         }>(`${import.meta.env.VITE_BACKEND_URL}/api/admin/problem/${problemId}`, {
@@ -79,8 +91,8 @@ export default function AdminModifyProblem() {
         visible: formData.visible,
         name: formData.name,
         testCases: formData.testCases,
-        expectedOutput: formData.expectedOutput,
-        input: formData.input,
+        expectedOutput: formData.sampleOutput,
+        input: formData.sampleInput,
         level: formData.level, // Include the level field in the request
       },
       {
@@ -174,9 +186,18 @@ export default function AdminModifyProblem() {
             <Label htmlFor="testcases">Sample Test Cases</Label>
             <Textarea
               id="testcases"
-              value={formData.testCases}
+              value={formData.testCases.map(tc => `Input: ${tc.input}\nOutput: ${tc.output}\nHidden: ${tc.hidden}`).join('\n\n')}
               onChange={(e) =>
-                setFormData({ ...formData, testCases: e.target.value })
+                setFormData({
+                  ...formData,
+                  testCases: [
+                    {
+                      input: e.target.value,
+                      output: formData.testCases[0]?.output || "",
+                      hidden: false,
+                    },
+                  ],
+                })
               }
               className="font-mono"
               placeholder="One test case per line"
@@ -188,9 +209,9 @@ export default function AdminModifyProblem() {
             <Label htmlFor="input">Input Test Cases</Label>
             <Textarea
               id="input"
-              value={formData.input}
+              value={formData.sampleInput}
               onChange={(e) =>
-                setFormData({ ...formData, input: e.target.value })
+                setFormData({ ...formData, sampleInput: e.target.value })
               }
               className="font-mono"
               placeholder="One test case per line"
@@ -202,9 +223,9 @@ export default function AdminModifyProblem() {
             <Label htmlFor="expectedOutput">Expected Output</Label>
             <Textarea
               id="expectedOutput"
-              value={formData.expectedOutput}
+              value={formData.sampleOutput}
               onChange={(e) =>
-                setFormData({ ...formData, expectedOutput: e.target.value })
+                setFormData({ ...formData, sampleOutput: e.target.value })
               }
               className="font-mono"
               placeholder="One output per line"
