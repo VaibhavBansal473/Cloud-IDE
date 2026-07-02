@@ -55,7 +55,7 @@ export default function Problems() {
     }
     getProblems();
   },[])
-
+console.log("Page:", page);
   return (
     <div className="space-y-8">
       <div>
@@ -131,31 +131,43 @@ export default function Problems() {
       </div>
 
       <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              // disabled={page === 1}
-            />
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setPage((p) => Math.max(1, p - 1));
+            }}
+          />
+        </PaginationItem>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+          <PaginationItem key={pageNum}>
+            <PaginationLink
+              href="#"
+              isActive={page === pageNum}
+              onClick={(e) => {
+                e.preventDefault();
+                setPage(pageNum);
+              }}
+            >
+              {pageNum}
+            </PaginationLink>
           </PaginationItem>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-            <PaginationItem key={pageNum}>
-              <PaginationLink
-                onClick={() => setPage(pageNum)}
-                isActive={page === pageNum}
-              >
-                {pageNum}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-          <PaginationItem>
-            <PaginationNext
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              // disabled= {page === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+        ))}
+
+        <PaginationItem>
+          <PaginationNext
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setPage((p) => Math.min(totalPages, p + 1));
+            }}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
     </div>
   );
 }
