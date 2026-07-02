@@ -130,44 +130,49 @@ console.log("Page:", page);
         </div>
       </div>
 
-      <Pagination>
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setPage((p) => Math.max(1, p - 1));
-            }}
-          />
-        </PaginationItem>
+     <Pagination>
+  <PaginationContent>
+    <PaginationItem>
+      <Button
+        variant="outline"
+        disabled={page === 1}
+        onClick={() => {
+          console.log("PREVIOUS CLICKED");
+          setPage((p) => Math.max(1, p - 1));
+        }}
+      >
+        Previous
+      </Button>
+    </PaginationItem>
 
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-          <PaginationItem key={pageNum}>
-            <PaginationLink
-              href="#"
-              isActive={page === pageNum}
-              onClick={(e) => {
-                e.preventDefault();
-                setPage(pageNum);
-              }}
-            >
-              {pageNum}
-            </PaginationLink>
-          </PaginationItem>
-        ))}
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+      <PaginationItem key={pageNum}>
+        <Button
+          variant={page === pageNum ? "default" : "outline"}
+          onClick={() => {
+            console.log("PAGE", pageNum);
+            setPage(pageNum);
+          }}
+        >
+          {pageNum}
+        </Button>
+      </PaginationItem>
+    ))}
 
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setPage((p) => Math.min(totalPages, p + 1));
-            }}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+    <PaginationItem>
+      <Button
+        variant="outline"
+        disabled={page === totalPages}
+        onClick={() => {
+          console.log("NEXT CLICKED");
+          setPage((p) => Math.min(totalPages, p + 1));
+        }}
+      >
+        Next
+      </Button>
+    </PaginationItem>
+  </PaginationContent>
+</Pagination>
     </div>
   );
 }
