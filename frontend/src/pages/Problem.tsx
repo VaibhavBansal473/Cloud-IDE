@@ -259,6 +259,22 @@ return (
             __html: marked.parse(problem?.problemStatement || "") as string,
           }}
         />
+
+        <div className="grid gap-4 border-t pt-5 md:grid-cols-2">
+          <div className="rounded-md border bg-muted/30 p-4">
+            <p className="mb-3 text-sm font-semibold">Sample Input</p>
+            <pre className="min-h-20 whitespace-pre-wrap rounded bg-background p-3 font-mono text-sm text-foreground">
+              {problem.sampleInput || "No sample input provided."}
+            </pre>
+          </div>
+
+          <div className="rounded-md border bg-muted/30 p-4">
+            <p className="mb-3 text-sm font-semibold">Sample Output</p>
+            <pre className="min-h-20 whitespace-pre-wrap rounded bg-background p-3 font-mono text-sm text-foreground">
+              {problem.sampleOutput || "No sample output provided."}
+            </pre>
+          </div>
+        </div>
       </Card>
     </div>
   
