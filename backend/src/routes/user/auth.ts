@@ -3,8 +3,10 @@ import {userSignupController ,userSignupVerifyController } from "../../controlle
 import { userSigninController, userSigninVerifyController  } from "../../controllers/userSigin";
 import uservalidation from "../../middlewares/userValidation";
 import userLogoutController from "../../controllers/userLogout";
+import getCurrentUser from "../../controllers/getCurrentUser";
 const router = Router();
 
+router.get("/me", uservalidation, getCurrentUser);
 router.post("/signup" , userSignupController);
 router.post("/signup/verify", userSignupVerifyController);
 router.post("/signin", userSigninController);

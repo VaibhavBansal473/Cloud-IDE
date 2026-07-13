@@ -8,13 +8,13 @@ const uservalidation = async(req : Request,res: Response, next: NextFunction)=>{
 
         const token = req.cookies.jwtCloudIDE;
         if(!token){
-            res.status(400).json({message : "Your are not logged in"});
+            res.status(401).json({message : "You are not logged in"});
             return;
         }
 
         const decoded = jwt.verify(token, JWT_SECRET);
         if(!decoded || typeof decoded ==="string" || !decoded.Id){
-            res.status(400).json({message : "invalid token"});
+            res.status(401).json({message : "invalid token"});
             return;
         }
 
@@ -25,7 +25,7 @@ const uservalidation = async(req : Request,res: Response, next: NextFunction)=>{
         })
 
         if(!user){
-            res.status(400).json({message : "User does not exist"});
+            res.status(401).json({message : "User does not exist"});
             return;
         }
 
@@ -37,6 +37,16 @@ const uservalidation = async(req : Request,res: Response, next: NextFunction)=>{
         
     } catch (error) {
         console.log("error in user validation middleware" + error);
+        if (error instanceof jwt.TokenExpiredError) {
+            res.status(401).json({ message: "Session expired" });
+            return;
+        }
+
+        if (error instanceof jwt.JsonWebTokenError) {
+            res.status(401).json({ message: "invalid token" });
+            return;
+        }
+
         res.status(500).json({message : "Internal server error"});
     }
 }

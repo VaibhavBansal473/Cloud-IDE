@@ -8,7 +8,13 @@ export const getProblems = async (
   res: Response
 ): Promise<void> => {
   try {
-    const problems = await db.problem.findMany();
+    const problems = await db.problem.findMany({
+      include: {
+        testCases: {
+          orderBy: [{ position: "asc" }, { id: "asc" }],
+        },
+      },
+    });
 
     const modifiedProblems = problems.map((problem) => ({
       id: problem.id,
@@ -28,6 +34,12 @@ export const getProblems = async (
         problemStatement: problem.problemStatement,
         sampleInput: problem.sampleInput,
         sampleOutput: problem.sampleOutput,
+        sampleTestCases: problem.testCases
+          .filter((testCase) => !testCase.hidden)
+          .map((testCase) => ({
+            input: testCase.input,
+            output: testCase.output,
+          })),
       }));
 
     setCacheProblems(selectedProblems);
@@ -55,7 +67,9 @@ export const getProblemById = async (
         id: problemId,
       },
       include: {
-        testCases: true,
+        testCases: {
+          orderBy: [{ position: "asc" }, { id: "asc" }],
+        },
       },
     });
 

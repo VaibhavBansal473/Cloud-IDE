@@ -27,9 +27,9 @@ interface NavItem {
 }
 
 export default function Navbar() {
-  const { authUser, setAuthUser } = useAuthContext();
+  const { authUser, isAuthLoading, setAuthUser } = useAuthContext();
   const navigate = useNavigate();
-  const role = authUser?.role;
+  const role = isAuthLoading ? undefined : authUser?.role;
 
   const logoutHandler = async () => {
     try {
@@ -46,12 +46,12 @@ export default function Navbar() {
       clearAuthSession();
       setAuthUser(null);
       toast.success("Logged out successfully");
-      navigate("/");
+      navigate("/signin");
     } catch (error) {
       clearAuthSession();
       setAuthUser(null);
       toast.error("Session cleared locally. Please sign in again if needed.");
-      navigate("/");
+      navigate("/signin");
     }
   };
 

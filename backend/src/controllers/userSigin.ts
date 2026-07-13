@@ -8,6 +8,7 @@ import {
   userSigninZodSchema,
   userSigninVerifyZodSchema,
 } from "../zod/auth";
+import { authCookieOptions } from "../utils/cookieOptions";
 
 export const userSigninController = async (
   req: Request,
@@ -103,12 +104,11 @@ export const userSigninVerifyController = async (
       expiresIn: "15d",
     });
 
-    res.cookie("jwtCloudIDE", token, {
-    maxAge: 15 * 24 * 60 * 60 * 1000,
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-});
+    res.cookie(
+      "jwtCloudIDE",
+      token,
+      authCookieOptions(15 * 24 * 60 * 60 * 1000)
+    );
 
     res.status(200).json({
       userId: user.id,

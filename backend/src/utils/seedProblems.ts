@@ -581,8 +581,20 @@ export const seedDefaultProblems = async () => {
         }
 
         for (const problem of defaultProblems) {
+            const testCases = Array.isArray((problem.testCases as any)?.create)
+                ? (problem.testCases as any).create
+                : [];
+
             await db.problem.create({
-                data: problem,
+                data: {
+                    ...problem,
+                    testCases: {
+                        create: testCases.map((testCase: any, index: number) => ({
+                            ...testCase,
+                            position: index,
+                        })),
+                    },
+                },
             });
         }
 

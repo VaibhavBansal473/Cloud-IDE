@@ -10,4 +10,8 @@ export type Problem = {
   problemStatement: string;
   sampleInput: string;
   sampleOutput: string;
+  sampleTestCases?: {
+    input: string;
+    output: string;
+  }[];
 };

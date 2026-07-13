@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { db } from "../db";
 import { Difficulty } from "@prisma/client";
 import { addProblemZodSchema } from "../zod/problemsSchema";
+import { clearCacheProblems } from "../cache/ProblemsChache";
 
 const addProblem = async (req: Request, res: Response) => {
   try {
@@ -30,6 +31,13 @@ const addProblem = async (req: Request, res: Response) => {
       testCases,
     } = data.data;
 
+    const testCasesWithPositions = testCases.map((testCase, index) => ({
+      ...testCase,
+      position: index,
+    }));
+
+    const firstSample = testCasesWithPositions.find((testCase) => !testCase.hidden);
+
     const problem = await db.problem.create({
       data: {
         visible,
@@ -37,16 +45,18 @@ const addProblem = async (req: Request, res: Response) => {
         level: level as Difficulty,
         tags,
         problemStatement,
-        sampleInput,
-        sampleOutput,
+        sampleInput: firstSample?.input ?? sampleInput,
+        sampleOutput: firstSample?.output ?? sampleOutput,
 
         testCases: {
-          create: testCases,
+          create: testCasesWithPositions,
         },
 
         adminId,
       },
     });
+
+    clearCacheProblems();
 
     res.status(200).json({
       id: problem.id,

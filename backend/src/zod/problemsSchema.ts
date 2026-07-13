@@ -1,5 +1,11 @@
 import z from "zod";
 
+const testCaseSchema = z.object({
+  input: z.string(),
+  output: z.string(),
+  hidden: z.boolean().optional().default(true),
+});
+
 export const addProblemZodSchema = z.object({
   visible: z.boolean(),
 
@@ -15,13 +21,26 @@ export const addProblemZodSchema = z.object({
 
   sampleOutput: z.string(),
 
-  testCases: z.array(
-    z.object({
-      input: z.string(),
-      output: z.string(),
-      hidden: z.boolean().optional().default(true),
-    })
-  ),
+  testCases: z.array(testCaseSchema),
+}).superRefine((problem, ctx) => {
+  const sampleCount = problem.testCases.filter((testCase) => !testCase.hidden).length;
+  const hiddenCount = problem.testCases.filter((testCase) => testCase.hidden).length;
+
+  if (sampleCount < 1 || sampleCount > 3) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Problem must have between 1 and 3 sample test cases",
+      path: ["testCases"],
+    });
+  }
+
+  if (hiddenCount > 5) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Problem cannot have more than 5 hidden test cases",
+      path: ["testCases"],
+    });
+  }
 });
 
 export const submitProblemZodSchema = z.object({

@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { submitProblemZodSchema } from "../zod/problemsSchema";
-import axios from "axios";
 import { db } from "../db";
-import { SUBMISSION_URL } from "../utils/envVars";
+import { SUBMISSION_BATCH_SIZE, submitJudge0Batch } from "../utils/judge0";
 
 const submitProblem = async (req: Request, res: Response) => {
     try {
@@ -30,6 +29,11 @@ const submitProblem = async (req: Request, res: Response) => {
             where: {
                 id: problemId,
             },
+            include: {
+                testCases: {
+                    orderBy: [{ position: "asc" }, { id: "asc" }],
+                },
+            },
         });
 
         if (!problem || !problem.visible) {
@@ -37,35 +41,26 @@ const submitProblem = async (req: Request, res: Response) => {
             return;
         }
 
-        const options = {
-            method: "POST",
-            url: SUBMISSION_URL,
-            params: {
-                base64_encoded: "false",
-                wait: "false",
-                fields: "*",
-            },
-            headers: {
-                "Content-Type": "application/json",
-                "X-RapidAPI-Key": process.env.RAPID_API_KEY,
-                "X-RapidAPI-Host": process.env.RAPID_API_HOST,
-            },
-            data: {
-                language_id: languageId,
-                source_code: sourceCode,
-                stdin: problem.sampleInput,
-                expected_output: problem.sampleOutput,
-            },
-        };
+        const hiddenTestCases = problem.testCases.filter((testCase) => testCase.hidden);
+        const sampleTestCases = problem.testCases.filter((testCase) => !testCase.hidden);
+        const testCasesToRun = hiddenTestCases.length > 0 ? hiddenTestCases : sampleTestCases;
 
-        const response: any = await axios.request(options);
+        if (testCasesToRun.length === 0) {
+            res.status(400).json({ message: "Problem has no test cases" });
+            return;
+        }
 
-        const token: string = response.data.token;
+        const firstBatch = testCasesToRun.slice(0, SUBMISSION_BATCH_SIZE);
+        const tokens = await submitJudge0Batch(sourceCode, languageId, firstBatch);
 
         const submission = await db.submission.create({
             data: {
                 state: "pending",
-                judge0TrackingId: token,
+                judge0TrackingId: tokens[0],
+                judge0Tokens: tokens,
+                currentBatchStart: 0,
+                sourceCode,
+                languageId,
                 problemId,
                 userId,
             },

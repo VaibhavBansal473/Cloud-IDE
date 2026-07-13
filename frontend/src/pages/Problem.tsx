@@ -75,6 +75,10 @@ interface Problem {
   problemStatement: string;
   sampleInput: string;
   sampleOutput: string;
+  sampleTestCases?: {
+    input: string;
+    output: string;
+  }[];
 }
 
 
@@ -122,7 +126,7 @@ useEffect(() => {
       if (status === 401 || status === 403) {
         clearAuthSession();
         setAuthUser(null);
-        toast.error("Please sign in to view this problem.");
+        toast.error("Your session has expired. Please sign in again.");
         navigate("/signin");
         return;
       }
@@ -175,6 +179,17 @@ const pollSubmissionStatus = async (submissionId: string) => {
       setIsLoading(false);
       setSubmissionStatus("error");
 
+      const status = (error as { response?: { status?: number } }).response
+        ?.status;
+
+      if (status === 401 || status === 403) {
+        clearAuthSession();
+        setAuthUser(null);
+        toast.error("Your session has expired. Please sign in again.");
+        navigate("/signin");
+        return;
+      }
+
       toast.error("Failed to fetch submission status.");
     }
   }, 2000);
@@ -211,6 +226,17 @@ const handleSubmit = async () => {
     setSubmissionStatus("error");
     setIsLoading(false);
 
+    const status = (error as { response?: { status?: number } }).response
+      ?.status;
+
+    if (status === 401 || status === 403) {
+      clearAuthSession();
+      setAuthUser(null);
+      toast.error("Your session has expired. Please sign in again.");
+      navigate("/signin");
+      return;
+    }
+
     toast.error("Failed to submit code.");
   }
 };
@@ -233,6 +259,16 @@ if (!problem) {
     </div>
   );
 }
+
+const sampleTestCases = problem.sampleTestCases?.length
+  ? problem.sampleTestCases
+  : [
+      {
+        input: problem.sampleInput,
+        output: problem.sampleOutput,
+      },
+    ];
+
 return (
     
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-2">
@@ -274,20 +310,24 @@ return (
           }}
         />
 
-        <div className="grid gap-4 border-t pt-5 md:grid-cols-2">
-          <div className="rounded-md border bg-muted/30 p-4">
-            <p className="mb-3 text-sm font-semibold">Sample Input</p>
-            <pre className="min-h-20 whitespace-pre-wrap rounded bg-background p-3 font-mono text-sm text-foreground">
-              {problem.sampleInput || "No sample input provided."}
-            </pre>
-          </div>
+        <div className="space-y-4 border-t pt-5">
+          {sampleTestCases.map((testCase, index) => (
+            <div key={`${testCase.input}-${index}`} className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-md border bg-muted/30 p-4">
+                <p className="mb-3 text-sm font-semibold">Sample Input {index + 1}</p>
+                <pre className="min-h-20 whitespace-pre-wrap rounded bg-background p-3 font-mono text-sm text-foreground">
+                  {testCase.input || "No sample input provided."}
+                </pre>
+              </div>
 
-          <div className="rounded-md border bg-muted/30 p-4">
-            <p className="mb-3 text-sm font-semibold">Sample Output</p>
-            <pre className="min-h-20 whitespace-pre-wrap rounded bg-background p-3 font-mono text-sm text-foreground">
-              {problem.sampleOutput || "No sample output provided."}
-            </pre>
-          </div>
+              <div className="rounded-md border bg-muted/30 p-4">
+                <p className="mb-3 text-sm font-semibold">Sample Output {index + 1}</p>
+                <pre className="min-h-20 whitespace-pre-wrap rounded bg-background p-3 font-mono text-sm text-foreground">
+                  {testCase.output || "No sample output provided."}
+                </pre>
+              </div>
+            </div>
+          ))}
         </div>
       </Card>
     </div>
@@ -363,7 +403,8 @@ return (
                     : submissionStatus === "Wrong Answer"
                     ? "text-amber-600"
                     : submissionStatus === "Compilation Error" ||
-                      submissionStatus === "Runtime Error (NZEC)" ||
+                      submissionStatus === "Runtime Error" ||
+                      submissionStatus === "Time Limit Exceeded" ||
                       submissionStatus === "Rejected"
                     ? "text-rose-600"
                     : "text-gray-600"
@@ -375,31 +416,11 @@ return (
 
             <div>
               <p className="font-semibold mb-2">
-                Sample Input
-              </p>
-
-              <pre className="bg-gray-100 dark:bg-zinc-900 p-3 rounded text-sm whitespace-pre-wrap">
-                {problem.sampleInput}
-              </pre>
-            </div>
-
-            <div>
-              <p className="font-semibold mb-2">
-                Expected Output
-              </p>
-
-              <pre className="bg-gray-100 dark:bg-zinc-900 p-3 rounded text-sm whitespace-pre-wrap">
-                {problem.sampleOutput}
-              </pre>
-            </div>
-
-            <div>
-              <p className="font-semibold mb-2">
-                Your Output
+                Details
               </p>
 
               <pre className="bg-gray-100 dark:bg-zinc-900 p-3 rounded text-sm whitespace-pre-wrap min-h-[80px]">
-                {output.stdout || "No Output"}
+                {output.stdout || submissionStatus}
               </pre>
             </div>
 

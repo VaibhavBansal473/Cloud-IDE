@@ -5,6 +5,7 @@ import sendMail from "../utils/mailer";
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from "../utils/envVars";
 import { userSignupVerifyZodSchema, userSignupZodSchema } from "../zod/auth";
+import { authCookieOptions } from "../utils/cookieOptions";
 
 export const userSignupController = async(req : Request,res: Response)=>{
     try {
@@ -80,12 +81,7 @@ export const userSignupVerifyController = async(req : Request,res: Response)=>{
             expiresIn: '15d'
         });
 
-        res.cookie("jwtCloudIDE",token, {
-            maxAge: 15*24*60*60*1000,
-            httpOnly: true,
-            // sameSite: "none",
-            secure: false
-        })
+        res.cookie("jwtCloudIDE", token, authCookieOptions(15 * 24 * 60 * 60 * 1000))
 
         res.status(200).json({
             userId: user.id,
@@ -97,7 +93,6 @@ export const userSignupVerifyController = async(req : Request,res: Response)=>{
         res.status(500).json({message: "Internal server error"});
     }
 }
-
 
 
 

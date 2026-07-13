@@ -4,6 +4,7 @@ import { db } from "../db";
 import bcrypt from 'bcryptjs'
 import { ADMIN_JWT_SECRET } from "../utils/envVars";
 import jwt from 'jsonwebtoken'
+import { authCookieOptions } from "../utils/cookieOptions";
 
 export const adminSigninController = async (req: Request, res: Response) =>  {
     try {
@@ -32,12 +33,7 @@ export const adminSigninController = async (req: Request, res: Response) =>  {
             expiresIn: '1h'
         });
 
-        res.cookie("AdminTokenCloudIDE", token, {
-            maxAge: 60*60*1000,
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-        })
+        res.cookie("AdminTokenCloudIDE", token, authCookieOptions(60 * 60 * 1000))
 
         res.status(200).json({
             id: Admin.id,

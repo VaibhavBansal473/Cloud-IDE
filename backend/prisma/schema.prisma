@@ -52,6 +52,7 @@ model TestCase {
   output    String   @db.Text
 
   hidden    Boolean  @default(true)
+  position  Int      @default(0)
 
   problemId String
   problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
@@ -66,6 +67,12 @@ model Submission {
   state             String
 
   judge0TrackingId  String    @unique
+  judge0Tokens      String[]  @default([])
+  currentBatchStart Int       @default(0)
+  failedTestCase    Int?
+  verdictMessage    String    @default("")
+  sourceCode        String    @default("") @db.Text
+  languageId        Int       @default(0)
 
   time              String    @default("")
   memory            Int       @default(0)

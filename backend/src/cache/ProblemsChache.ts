@@ -5,3 +5,7 @@ export let cachedProblems: Problem[] = [];
 export const setCacheProblems = (problems: Problem[]) =>{
     cachedProblems = problems;
 }
+
+export const clearCacheProblems = () => {
+    cachedProblems = [];
+}

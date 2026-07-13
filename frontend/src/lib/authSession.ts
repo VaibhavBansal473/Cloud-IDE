@@ -4,6 +4,7 @@ export interface AuthSession {
   role: AuthRole;
   id?: string;
   email?: string;
+  name?: string;
 }
 
 export const AUTH_STORAGE_KEY = "Cloud-IDE";

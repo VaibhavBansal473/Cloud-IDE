@@ -21,31 +21,49 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Save } from 'lucide-react';
+import { PlusCircle, Save, Trash2 } from 'lucide-react';
 
-const mockProblem = {
+type TestCaseForm = {
+  id?: string;
+  input: string;
+  output: string;
+  hidden: boolean;
+};
+
+type ProblemForm = {
+  id: string;
+  name: string;
+  level: string;
+  problemStatement: string;
+  visible: boolean;
+  tags: string[];
+  sampleInput: string;
+  sampleOutput: string;
+  testCases: TestCaseForm[];
+};
+
+const emptyTestCase = (hidden: boolean): TestCaseForm => ({
+  input: '',
+  output: '',
+  hidden,
+});
+
+const mockProblem: ProblemForm = {
   id: '',
   name: '',
-  level: '',
+  level: 'EASY',
   problemStatement: '',
   visible: true,
-  adminId: '000',
   tags: ["implementation"],
   sampleInput: "",
   sampleOutput: "",
-  testCases: [
-    {
-      input: "",
-      output: "",
-      hidden: false,
-    },
-  ],
+  testCases: [emptyTestCase(false)],
 };
 
 export default function AdminModifyProblem() {
   const navigate = useNavigate();
   const { problemId } = useParams();
-  const [formData, setFormData] = useState(mockProblem);
+  const [formData, setFormData] = useState<ProblemForm>(mockProblem);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,33 +71,26 @@ export default function AdminModifyProblem() {
     const getProblem = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get<{
-          id: string;
-          visible: boolean;
-          adminId: string;
-          problemStatement: string;
-          tags: string[];
-          sampleInput: string;
-          sampleOutput: string;
-          testCases: {
-            input: string;
-            output: string;
-            hidden: boolean;
-          }[];
-          level: string;
-          name: string;
-        }>(`${import.meta.env.VITE_BACKEND_URL}/api/admin/problem/${problemId}`, {
-          withCredentials: true,
-        });
+        const response = await axios.get<ProblemForm>(
+          `${import.meta.env.VITE_BACKEND_URL}/api/admin/problem/${problemId}`,
+          {
+            withCredentials: true,
+          }
+        );
 
         const problem = response.data;
 
         if (!problem) {
           toast.error('Something went wrong while fetching the problem');
           navigate('/admin/problems');
+          return;
         }
 
-        setFormData(problem);
+        setFormData({
+          ...problem,
+          level: problem.level.toUpperCase(),
+          testCases: problem.testCases.length ? problem.testCases : [emptyTestCase(false)],
+        });
       } catch (error) {
         toast.error('Something went wrong');
         navigate('/admin/problems');
@@ -89,10 +100,57 @@ export default function AdminModifyProblem() {
     };
 
     getProblem();
-  }, []);
+  }, [navigate, problemId]);
+
+  const updateTestCase = (
+    index: number,
+    field: keyof TestCaseForm,
+    value: string
+  ) => {
+    setFormData((current) => ({
+      ...current,
+      testCases: current.testCases.map((testCase, testCaseIndex) =>
+        testCaseIndex === index ? { ...testCase, [field]: value } : testCase
+      ),
+    }));
+  };
+
+  const addTestCase = (hidden: boolean) => {
+    const limit = hidden ? 5 : 3;
+    const count = formData.testCases.filter((testCase) => testCase.hidden === hidden).length;
+
+    if (count >= limit) {
+      toast.error(hidden ? "You can add up to 5 hidden test cases." : "You can add up to 3 sample test cases.");
+      return;
+    }
+
+    setFormData((current) => ({
+      ...current,
+      testCases: [...current.testCases, emptyTestCase(hidden)],
+    }));
+  };
+
+  const removeTestCase = (index: number) => {
+    setFormData((current) => {
+      const testCase = current.testCases[index];
+      const sameTypeCount = current.testCases.filter((item) => item.hidden === testCase.hidden).length;
+
+      if (!testCase.hidden && sameTypeCount === 1) {
+        toast.error("At least one sample test case is required.");
+        return current;
+      }
+
+      return {
+        ...current,
+        testCases: current.testCases.filter((_, testCaseIndex) => testCaseIndex !== index),
+      };
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const sampleTestCases = formData.testCases.filter((testCase) => !testCase.hidden);
+
     try {
       setIsSubmitting(true);
       await axios.patch(
@@ -100,10 +158,16 @@ export default function AdminModifyProblem() {
         {
           visible: formData.visible,
           name: formData.name,
-          testCases: formData.testCases,
-          expectedOutput: formData.sampleOutput,
-          input: formData.sampleInput,
-          level: formData.level, // Include the level field in the request
+          level: formData.level.toUpperCase(),
+          tags: formData.tags,
+          problemStatement: formData.problemStatement,
+          sampleInput: sampleTestCases[0]?.input ?? "",
+          sampleOutput: sampleTestCases[0]?.output ?? "",
+          testCases: formData.testCases.map(({ input, output, hidden }) => ({
+            input,
+            output,
+            hidden,
+          })),
         },
         {
           withCredentials: true,
@@ -132,12 +196,73 @@ export default function AdminModifyProblem() {
     }
   };
 
+  const renderTestCases = (hidden: boolean) => {
+    const title = hidden ? "Hidden Test Cases" : "Sample Test Cases";
+    const testCases = formData.testCases
+      .map((testCase, index) => ({ ...testCase, index }))
+      .filter((testCase) => testCase.hidden === hidden);
+
+    return (
+      <div className="space-y-4 rounded-lg border bg-muted/20 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <Label>{title}</Label>
+          <Button type="button" variant="outline" size="sm" onClick={() => addTestCase(hidden)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add
+          </Button>
+        </div>
+
+        {testCases.map((testCase, visibleIndex) => (
+          <div key={testCase.id ?? testCase.index} className="grid gap-4 border-t pt-4 md:grid-cols-[1fr_1fr_auto]">
+            <div className="space-y-2">
+              <Label htmlFor={`${hidden ? "hidden" : "sample"}-input-${visibleIndex}`}>
+                Input {visibleIndex + 1}
+              </Label>
+              <Textarea
+                id={`${hidden ? "hidden" : "sample"}-input-${visibleIndex}`}
+                value={testCase.input}
+                onChange={(e) => updateTestCase(testCase.index, "input", e.target.value)}
+                className="min-h-32 font-mono"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`${hidden ? "hidden" : "sample"}-output-${visibleIndex}`}>
+                Output {visibleIndex + 1}
+              </Label>
+              <Textarea
+                id={`${hidden ? "hidden" : "sample"}-output-${visibleIndex}`}
+                value={testCase.output}
+                onChange={(e) => updateTestCase(testCase.index, "output", e.target.value)}
+                className="min-h-32 font-mono"
+                required
+              />
+            </div>
+
+            <div className="flex items-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => removeTestCase(testCase.index)}
+                aria-label="Remove test case"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <PageHeader
         eyebrow="Admin Dashboard"
         title="Modify Problem"
-        description="Update problem details, visibility, test data, or remove the challenge."
+        description="Update problem details, visibility, sample data, hidden data, or remove the challenge."
       />
 
       {isLoading ? (
@@ -193,7 +318,7 @@ export default function AdminModifyProblem() {
             <div className="space-y-2">
               <Label>Difficulty Level</Label>
               <div className="flex flex-wrap gap-4">
-                {['easy', 'medium', 'hard'].map((level) => (
+                {['EASY', 'MEDIUM', 'HARD'].map((level) => (
                   <div key={level} className="flex items-center space-x-2">
                     <input
                       type="radio"
@@ -207,7 +332,7 @@ export default function AdminModifyProblem() {
                       className="cursor-pointer"
                     />
                     <Label htmlFor={`level-${level}`} className="cursor-pointer">
-                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                      {level.charAt(0) + level.slice(1).toLowerCase()}
                     </Label>
                   </div>
                 ))}
@@ -215,58 +340,8 @@ export default function AdminModifyProblem() {
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-2">
-            <Label htmlFor="testcases">Sample Test Cases</Label>
-            <Textarea
-              id="testcases"
-              value={formData.testCases.map(tc => `Input: ${tc.input}\nOutput: ${tc.output}\nHidden: ${tc.hidden}`).join('\n\n')}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  testCases: [
-                    {
-                      input: e.target.value,
-                      output: formData.testCases[0]?.output || "",
-                      hidden: false,
-                    },
-                  ],
-                })
-              }
-              className="min-h-40 font-mono"
-              placeholder="One test case per line"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="input">Input Test Cases</Label>
-            <Textarea
-              id="input"
-              value={formData.sampleInput}
-              onChange={(e) =>
-                setFormData({ ...formData, sampleInput: e.target.value })
-              }
-              className="min-h-40 font-mono"
-              placeholder="One test case per line"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="expectedOutput">Expected Output</Label>
-            <Textarea
-              id="expectedOutput"
-              value={formData.sampleOutput}
-              onChange={(e) =>
-                setFormData({ ...formData, sampleOutput: e.target.value })
-              }
-              className="min-h-40 font-mono"
-              placeholder="One output per line"
-              required
-            />
-          </div>
-          </div>
+          {renderTestCases(false)}
+          {renderTestCases(true)}
 
           <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:justify-between">
             <AlertDialog>

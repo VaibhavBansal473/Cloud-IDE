@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
+import { clearAuthCookieOptions } from "../utils/cookieOptions";
 
 const userLogoutController = async(req:Request, res: Response)=>{
     try {
 
-        res.cookie("jwtCloudIDE","",{maxAge:0});
+        res.cookie("jwtCloudIDE", "", { ...clearAuthCookieOptions, maxAge: 0 });
         res.status(200).json({message: "Logged out successfully"})
         
     } catch (error) {

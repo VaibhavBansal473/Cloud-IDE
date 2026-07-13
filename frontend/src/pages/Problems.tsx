@@ -55,7 +55,7 @@ export default function Problems() {
       if (status === 401 || status === 403) {
         clearAuthSession();
         setAuthUser(null);
-        toast.error("Please sign in to view problems");
+        toast.error("Your session has expired. Please sign in again.");
         navigate("/signin");
         return;
       }

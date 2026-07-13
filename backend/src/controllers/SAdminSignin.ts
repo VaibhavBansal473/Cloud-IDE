@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { adminSigninZodSchema } from "../zod/auth";
 import jwt from 'jsonwebtoken'
 import { S_ADMIN_JWT_SECRET } from "../utils/envVars";
+import { authCookieOptions } from "../utils/cookieOptions";
 
 const SAdminSignin= async(req:Request,res:Response)=>{
     try {
@@ -22,12 +23,7 @@ const SAdminSignin= async(req:Request,res:Response)=>{
             expiresIn: '1h'
         });
 
-        res.cookie("SAdminTokenCloudIDE", token, {
-        maxAge: 60 * 60 * 1000,
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-        });
+        res.cookie("SAdminTokenCloudIDE", token, authCookieOptions(60 * 60 * 1000));
 
         res.status(200).json({message: "seccess"});
 
