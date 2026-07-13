@@ -54,8 +54,8 @@ export const SubmissionCallbackZodSchema = z.object({
   memory: z.number().optional().nullable(),
   stderr: z.string().optional().nullable(),
   token: z.string(),
-  compile_output: z.string().nullable(),
-  message: z.string().nullable(),
+  compile_output: z.string().optional().nullable(),
+  message: z.string().optional().nullable(),
   status: z.object({
     id: z.number(),
     description: z.string(),

@@ -1,7 +1,13 @@
 import axios from "axios";
-import { RAPID_API_HOST, RAPID_API_KEY, STATUS_URL, SUBMISSION_URL } from "./envVars";
+import {
+  JUDGE0_CALLBACK_SECRET,
+  JUDGE0_CALLBACK_URL,
+  RAPID_API_HOST,
+  RAPID_API_KEY,
+  SUBMISSION_URL,
+} from "./envVars";
 
-export const SUBMISSION_BATCH_SIZE = 2;
+export const SUBMISSION_BATCH_SIZE = 1;
 
 export interface Judge0Result {
   token: string;
@@ -32,6 +38,15 @@ export const submitJudge0Batch = async (
   languageId: number,
   testCases: Judge0TestCase[]
 ) => {
+  if (!JUDGE0_CALLBACK_URL) {
+    throw new Error("JUDGE0_CALLBACK_URL is required for callback execution");
+  }
+
+  const callbackUrl = new URL(JUDGE0_CALLBACK_URL);
+  if (JUDGE0_CALLBACK_SECRET) {
+    callbackUrl.searchParams.set("secret", JUDGE0_CALLBACK_SECRET);
+  }
+
   const response = await axios.post<{ token: string }[]>(
     `${SUBMISSION_URL}/batch`,
     {
@@ -40,6 +55,7 @@ export const submitJudge0Batch = async (
         source_code: sourceCode,
         stdin: testCase.input,
         expected_output: testCase.output,
+        callback_url: callbackUrl.toString(),
       })),
     },
     {
@@ -53,22 +69,6 @@ export const submitJudge0Batch = async (
   );
 
   return response.data.map((submission) => submission.token);
-};
-
-export const getJudge0BatchResults = async (tokens: string[]) => {
-  const response = await axios.get<{ submissions: Judge0Result[] }>(
-    `${STATUS_URL}/batch`,
-    {
-      params: {
-        tokens: tokens.join(","),
-        base64_encoded: "false",
-        fields: "*",
-      },
-      headers: getJudge0Headers(),
-    }
-  );
-
-  return response.data.submissions;
 };
 
 export const normalizeJudge0Status = (description: string) => {

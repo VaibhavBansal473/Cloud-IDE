@@ -3,6 +3,7 @@ import uservalidation from "../../middlewares/userValidation";
 import { getProblemById, getProblems } from "../../controllers/getProblemsUser";
 import submitProblem from "../../controllers/submitProblem";
 import getStatus from "../../controllers/getStatus";
+import streamStatus from "../../controllers/streamStatus";
 
 const router = Router();
 
@@ -12,6 +13,7 @@ router.get("/allProblems", uservalidation, getProblems);
 router.get("/problem/:problemId", uservalidation, getProblemById)
 
 router.get("/status/:submissionId", uservalidation, getStatus)
+router.get("/status/:submissionId/stream", uservalidation, streamStatus)
 router.post("/submit/:problemId", uservalidation ,submitProblem);
 
 export default router;

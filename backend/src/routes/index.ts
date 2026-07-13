@@ -18,5 +18,6 @@ router.post("/superAdmin/addAdmin",superAdminValidation,addAdmin);
 router.post("/superAdmin/signin",SAdminSignin);
 
 router.put("/submission_callback", submissionCallback)
+router.post("/submission_callback", submissionCallback)
 
 export default router;

@@ -41,6 +41,6 @@ export const SUBMISSION_URL =
     process.env.SUBMISSION_URL ||
     "https://judge0-ce.p.rapidapi.com/submissions";
 
-export const STATUS_URL =
-    process.env.STATUS_URL ||
-    "https://judge0-ce.p.rapidapi.com/submissions";
+export const JUDGE0_CALLBACK_URL = process.env.JUDGE0_CALLBACK_URL;
+
+export const JUDGE0_CALLBACK_SECRET = process.env.JUDGE0_CALLBACK_SECRET;

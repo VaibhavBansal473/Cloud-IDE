@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { marked } from 'marked';
@@ -87,6 +87,7 @@ export default function Problem() {
   const { problemId } = useParams();
   const navigate = useNavigate();
   const { setAuthUser } = useAuthContext();
+  const submissionEventsRef = useRef<EventSource | null>(null);
 
   const [language, setLanguage] = useState("cpp");
   const [code, setCode] = useState("");
@@ -141,58 +142,43 @@ useEffect(() => {
   }
 }, [problemId, navigate, setAuthUser]);
 
-const pollSubmissionStatus = async (submissionId: string) => {
-  const maxDuration = 5 * 60 * 1000;
-  const startTime = Date.now();
+useEffect(() => {
+  return () => {
+    submissionEventsRef.current?.close();
+  };
+}, []);
 
-  const interval = setInterval(async () => {
-    if (Date.now() - startTime >= maxDuration) {
-      clearInterval(interval);
+const subscribeToSubmissionStatus = (submissionId: string) => {
+  submissionEventsRef.current?.close();
+
+  const eventSource = new EventSource(
+    `${import.meta.env.VITE_BACKEND_URL}/api/user/status/${submissionId}/stream`,
+    { withCredentials: true }
+  );
+
+  submissionEventsRef.current = eventSource;
+
+  eventSource.onmessage = (event) => {
+    const statusUpdate = JSON.parse(event.data) as PollType;
+
+    setSubmissionStatus(statusUpdate.status);
+    setOutput(statusUpdate.output);
+
+    if (statusUpdate.status !== "pending") {
       setIsLoading(false);
-      setSubmissionStatus("timeout");
       setActiveTab("Submission");
-      toast.error("Submission timed out.");
-      return;
+      eventSource.close();
+      submissionEventsRef.current = null;
     }
+  };
 
-    try {
-      const statusRes = await axios.get<PollType>(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/status/${submissionId}`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      const status = statusRes.data.status;
-
-      if (status !== "pending") {
-        clearInterval(interval);
-
-        setSubmissionStatus(status);
-        setOutput(statusRes.data.output);
-        setIsLoading(false);
-        setActiveTab("Submission");
-      }
-    } catch (error) {
-      clearInterval(interval);
-
-      setIsLoading(false);
-      setSubmissionStatus("error");
-
-      const status = (error as { response?: { status?: number } }).response
-        ?.status;
-
-      if (status === 401 || status === 403) {
-        clearAuthSession();
-        setAuthUser(null);
-        toast.error("Your session has expired. Please sign in again.");
-        navigate("/signin");
-        return;
-      }
-
-      toast.error("Failed to fetch submission status.");
-    }
-  }, 2000);
+  eventSource.onerror = () => {
+    eventSource.close();
+    submissionEventsRef.current = null;
+    setIsLoading(false);
+    setSubmissionStatus("error");
+    toast.error("Failed to receive execution status.");
+  };
 };
 
 const handleSubmit = async () => {
@@ -221,7 +207,7 @@ const handleSubmit = async () => {
       }
     );
 
-    pollSubmissionStatus(res.data.submissionId);
+    subscribeToSubmissionStatus(res.data.submissionId);
   } catch (error) {
     setSubmissionStatus("error");
     setIsLoading(false);
